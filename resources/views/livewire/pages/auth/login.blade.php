@@ -20,7 +20,10 @@ new #[Layout('layouts.guest')] class extends Component
 
         Session::regenerate();
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $user = auth()->user();
+        $target = $user && $user->is_admin ? '/admin/techniques' : '/en';
+
+        $this->redirectIntended(default: $target, navigate: true);
     }
 }; ?>
 

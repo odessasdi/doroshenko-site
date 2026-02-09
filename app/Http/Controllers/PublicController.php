@@ -16,11 +16,6 @@ class PublicController extends Controller
         return view('public.gallery');
     }
 
-    public function about(): View
-    {
-        return view('public.about');
-    }
-
     public function contacts(): View
     {
         return view('public.contacts');

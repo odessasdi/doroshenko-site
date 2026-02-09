@@ -10,33 +10,66 @@
 <header class="border-b border-zinc-200">
 
 <div class="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
-        <a href="{{ route('home', ['locale' => app()->getLocale()]) }}" class="font-semibold tracking-tight">
-            {{ config('app.name', 'Artist') }}
-        </a>
-        <!-- TODO ВЫБОР ЯЗЫКА -->
         @php
             $locale = app()->getLocale();
-            $current = request()->route()?->getName(); // например 'gallery'
-            $params = request()->route()?->parameters() ?? []; // текущие параметры
+            $locales = ['en', 'de', 'ua'];
+            $segments = request()->segments();
+            $query = request()->getQueryString();
+            $currentHasLocale = isset($segments[0]) && in_array($segments[0], $locales, true);
         @endphp
 
-        <div class="flex items-center gap-2 text-sm text-zinc-600">
-            @foreach (['en' => 'EN', 'ru' => 'RU', 'ua' => 'UA'] as $loc => $label)
+        <div class="flex items-center gap-2 text-sm">
+            @foreach ($locales as $index => $loc)
+                @php
+                    $newSegments = $segments;
+                    if ($currentHasLocale) {
+                        $newSegments[0] = $loc;
+                    } else {
+                        array_unshift($newSegments, $loc);
+                    }
+                    $path = '/' . implode('/', $newSegments);
+                    $href = $query ? $path . '?' . $query : $path;
+                @endphp
                 <a
-                    href="{{ $current ? route($current, array_merge($params, ['locale' => $loc])) : url('/' . $loc) }}"
-                    class="rounded-md px-2 py-1 hover:bg-zinc-100 {{ $loc === $locale ? 'bg-zinc-100 text-zinc-900' : '' }}"
+                    href="{{ $href }}"
+                    class="{{ $loc === $locale ? 'font-semibold underline text-zinc-900' : 'text-zinc-600 hover:text-zinc-900' }}"
                 >
-                    {{ $label }}
+                    {{ strtoupper($loc) }}
                 </a>
+                @if ($index < 2)
+                    <span class="text-zinc-400">|</span>
+                @endif
             @endforeach
         </div>
 
         <nav class="flex items-center gap-6 text-sm">
-        @php($locale = app()->getLocale())
-        <a href="{{ route('home', ['locale' => $locale]) }}">{{ __('ui.home') }}</a>
-        <a href="{{ route('gallery', ['locale' => $locale]) }}">{{ __('ui.gallery') }}</a>
-        <a href="{{ route('about', ['locale' => $locale]) }}">{{ __('ui.about') }}</a>
-        <a href="{{ route('contacts', ['locale' => $locale]) }}">{{ __('ui.contacts') }}</a>
+        @php
+            $locale = app()->getLocale();
+            $current = request()->route()?->getName();
+        @endphp
+        <a
+            href="{{ route('home', ['locale' => $locale]) }}"
+            class="{{ $current === 'home' ? 'font-semibold text-zinc-900 border-b-2 border-zinc-900' : 'text-zinc-600 hover:text-zinc-900' }}"
+        >
+            {{ __('ui.home') }}
+        </a>
+        <a
+            href="{{ route('gallery', ['locale' => $locale]) }}"
+            class="{{ $current === 'gallery' ? 'font-semibold text-zinc-900 border-b-2 border-zinc-900' : 'text-zinc-600 hover:text-zinc-900' }}"
+        >
+            {{ __('ui.gallery') }}
+        </a>
+        <a
+            href="{{ route('contacts', ['locale' => $locale]) }}"
+            class="{{ $current === 'contacts' ? 'font-semibold text-zinc-900 border-b-2 border-zinc-900' : 'text-zinc-600 hover:text-zinc-900' }}"
+        >
+            {{ __('ui.contacts') }}
+        </a>
+        @auth
+            @if (auth()->user()->is_admin)
+                <a href="{{ route('admin.techniques') }}">Admin</a>
+            @endif
+        @endauth
         </nav>
     </div>
 </header>
