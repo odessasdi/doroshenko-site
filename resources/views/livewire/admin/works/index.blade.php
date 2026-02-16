@@ -81,6 +81,28 @@
                 </button>
             </div>
         </div>
+        <div class="mt-4 flex flex-wrap gap-2 text-xs text-zinc-600">
+            @if ($q !== '')
+                <span class="rounded-full bg-zinc-100 px-3 py-1">Search: "{{ $q }}"</span>
+            @endif
+            @if ($techniqueId)
+                <span class="rounded-full bg-zinc-100 px-3 py-1">
+                    Technique: {{ $techniques->firstWhere('id', $techniqueId)?->name_en ?? '—' }}
+                </span>
+            @endif
+            @if ($year)
+                <span class="rounded-full bg-zinc-100 px-3 py-1">Year: {{ $year }}</span>
+            @endif
+            @if ($published !== 'all')
+                <span class="rounded-full bg-zinc-100 px-3 py-1">Published: {{ $published }}</span>
+            @endif
+            @if ($perPage !== 20)
+                <span class="rounded-full bg-zinc-100 px-3 py-1">Per page: {{ $perPage }}</span>
+            @endif
+            @if ($q === '' && !$techniqueId && !$year && $published === 'all' && $perPage === 20)
+                <span class="text-zinc-400">No active filters</span>
+            @endif
+        </div>
     </div>
 
     <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">

@@ -17,6 +17,7 @@ Route::prefix('{locale}')
     ->group(function () {
         Route::get('/', [PublicController::class, 'home'])->name('home');
         Route::get('/gallery', [PublicController::class, 'gallery'])->name('gallery');
+        Route::get('/gallery/{work}', [PublicController::class, 'galleryShow'])->name('gallery.show');
         Route::get('/contacts', [PublicController::class, 'contacts'])->name('contacts');
     });
 

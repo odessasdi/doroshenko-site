@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class Work extends Model
@@ -45,7 +46,53 @@ class Work extends Model
 
     public function getMainImageUrlAttribute(): string
     {
-        return Storage::url($this->main_image_path);
+        return $this->mainImageUrl();
+    }
+
+    public function mainImageUrl(): string
+    {
+        return $this->pathToUrl($this->main_image_path);
+    }
+
+    public function imageUrls(): array
+    {
+        $urls = [];
+        $hasReal = false;
+
+        if ($this->main_image_path && Storage::disk('public')->exists($this->main_image_path)) {
+            $urls[] = Storage::url($this->main_image_path);
+            $hasReal = true;
+        }
+
+        $images = $this->relationLoaded('images') ? $this->images : $this->images()->get();
+        foreach ($images->sortBy('sort_order') as $image) {
+            if ($image->image_path && Storage::disk('public')->exists($image->image_path)) {
+                $urls[] = Storage::url($image->image_path);
+                $hasReal = true;
+            }
+        }
+
+        if (!$hasReal) {
+            $urls[] = $this->placeholderUrl();
+        }
+
+        return $urls;
+    }
+
+    public function hasRealImages(): bool
+    {
+        if ($this->main_image_path && Storage::disk('public')->exists($this->main_image_path)) {
+            return true;
+        }
+
+        $images = $this->relationLoaded('images') ? $this->images : $this->images()->get();
+        foreach ($images as $image) {
+            if ($image->image_path && Storage::disk('public')->exists($image->image_path)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function getSizeLabelAttribute(): ?string
@@ -88,5 +135,25 @@ class Work extends Model
         $formatted = number_format($value, 1, '.', '');
 
         return rtrim(rtrim($formatted, '0'), '.');
+    }
+
+    private function pathToUrl(?string $path): string
+    {
+        if ($path && Storage::disk('public')->exists($path)) {
+            return Storage::url($path);
+        }
+
+        if ($path && app()->environment('local')) {
+            Log::warning('Work image missing on disk', ['path' => $path, 'work_id' => $this->id]);
+        }
+
+        return $this->placeholderUrl();
+    }
+
+    private function placeholderUrl(): string
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900"><rect width="1200" height="900" fill="#f4f4f5"/><rect x="40" y="40" width="1120" height="820" fill="none" stroke="#d4d4d8" stroke-width="3"/><text x="600" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="#71717a">Image not available</text></svg>';
+
+        return 'data:image/svg+xml;utf8,' . rawurlencode($svg);
     }
 }

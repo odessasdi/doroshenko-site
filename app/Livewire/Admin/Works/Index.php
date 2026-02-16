@@ -22,6 +22,18 @@ class Index extends Component
 
     public function updated($property): void
     {
+        if ($property === 'techniqueId') {
+            $this->techniqueId = $this->normalizeInt($this->techniqueId);
+        }
+
+        if ($property === 'year') {
+            $this->year = $this->normalizeInt($this->year);
+        }
+
+        if ($property === 'perPage') {
+            $this->perPage = $this->normalizeInt($this->perPage) ?? 20;
+        }
+
         if (in_array($property, ['q', 'techniqueId', 'year', 'published', 'sortBy', 'sortDir', 'perPage'], true)) {
             $this->resetPage();
         }
@@ -122,5 +134,18 @@ class Index extends Component
             'works' => $works,
             'techniques' => $techniques,
         ]);
+    }
+
+    private function normalizeInt($value): ?int
+    {
+        if ($value === '' || $value === null) {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return (int) $value;
+        }
+
+        return null;
     }
 }
