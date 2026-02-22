@@ -127,7 +127,9 @@ class Index extends Component
             $query->orderBy($sortBy, $this->sortDir);
         }
 
-        $works = $query->paginate($this->perPage);
+        $works = $query
+            ->paginate($this->perPage)
+            ->withPath('/admin/works');
         $techniques = Technique::orderBy('name_en')->get();
 
         return view('livewire.admin.works.index', [

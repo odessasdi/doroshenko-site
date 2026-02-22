@@ -1,14 +1,14 @@
 <div class="space-y-6">
     <div class="flex items-start justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-semibold text-zinc-900">Edit Work</h1>
-            <p class="mt-1 text-sm text-zinc-600">Update work details and images.</p>
+            <h1 class="text-2xl font-semibold text-zinc-900">Редагування роботи</h1>
+            <p class="mt-1 text-sm text-zinc-600">Оновлення інформації та зображень роботи.</p>
         </div>
         <a
             href="/admin/works"
             class="inline-flex items-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
         >
-            Back to list
+            Повернутися до списку
         </a>
     </div>
 
@@ -21,24 +21,24 @@
     <form wire:submit="save" class="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div class="space-y-6">
             <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-zinc-900">Details</h2>
+                <h2 class="text-lg font-semibold text-zinc-900">Деталі</h2>
                 <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="text-sm font-medium text-zinc-700" for="technique_id">Technique</label>
+                        <label class="text-sm font-medium text-zinc-700" for="technique_id">Техніка</label>
                         <select
                             id="technique_id"
                             class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900"
                             wire:model="technique_id"
                         >
-                            <option value="">Select technique</option>
+                            <option value="">Оберіть техніку</option>
                             @foreach ($techniques as $technique)
-                                <option value="{{ $technique->id }}">{{ $technique->name_en }}</option>
+                                <option value="{{ $technique->id }}">{{ $technique->name_ua }}</option>
                             @endforeach
                         </select>
                         @error('technique_id') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-zinc-700" for="year">Year</label>
+                        <label class="text-sm font-medium text-zinc-700" for="year">Рік</label>
                         <input
                             id="year"
                             type="number"
@@ -48,7 +48,7 @@
                         @error('year') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-zinc-700" for="size_w_mm">Width (mm)</label>
+                        <label class="text-sm font-medium text-zinc-700" for="size_w_mm">Ширина (мм)</label>
                         <input
                             id="size_w_mm"
                             type="number"
@@ -58,7 +58,7 @@
                         @error('size_w_mm') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-zinc-700" for="size_h_mm">Height (mm)</label>
+                        <label class="text-sm font-medium text-zinc-700" for="size_h_mm">Висота (мм)</label>
                         <input
                             id="size_h_mm"
                             type="number"
@@ -68,7 +68,7 @@
                         @error('size_h_mm') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-zinc-700" for="price">Price</label>
+                        <label class="text-sm font-medium text-zinc-700" for="price">Ціна</label>
                         <input
                             id="price"
                             type="text"
@@ -79,13 +79,13 @@
                         @error('price') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-zinc-700" for="currency">Currency</label>
+                        <label class="text-sm font-medium text-zinc-700" for="currency">Валюта</label>
                         <select
                             id="currency"
                             class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900"
                             wire:model.defer="currency"
                         >
-                            <option value="">Select currency</option>
+                            <option value="">Оберіть валюту</option>
                             <option value="USD">USD</option>
                             <option value="EUR">EUR</option>
                             <option value="UAH">UAH</option>
@@ -93,7 +93,7 @@
                         @error('currency') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-zinc-700" for="sort_order">Sort order</label>
+                        <label class="text-sm font-medium text-zinc-700" for="sort_order">Порядок сортування</label>
                         <input
                             id="sort_order"
                             type="number"
@@ -109,12 +109,12 @@
                             class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
                             wire:model.defer="is_published"
                         >
-                        <label class="text-sm font-medium text-zinc-700" for="is_published">Published</label>
+                        <label class="text-sm font-medium text-zinc-700" for="is_published">Опубліковано</label>
                     </div>
                 </div>
                 <div class="mt-4 grid grid-cols-1 gap-4">
                     <div>
-                        <label class="text-sm font-medium text-zinc-700" for="description_en">Description (EN)</label>
+                        <label class="text-sm font-medium text-zinc-700" for="description_en">Опис (EN)</label>
                         <textarea
                             id="description_en"
                             rows="3"
@@ -124,7 +124,7 @@
                         @error('description_en') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                    <label class="text-sm font-medium text-zinc-700" for="description_de">Description (DE)</label>
+                    <label class="text-sm font-medium text-zinc-700" for="description_de">Опис (DE)</label>
                     <textarea
                         id="description_de"
                         rows="3"
@@ -134,7 +134,7 @@
                     @error('description_de') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-zinc-700" for="description_ua">Description (UA)</label>
+                        <label class="text-sm font-medium text-zinc-700" for="description_ua">Опис (UA)</label>
                         <textarea
                             id="description_ua"
                             rows="3"
@@ -149,7 +149,7 @@
 
         <div class="space-y-6">
             <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-zinc-900">Main image</h2>
+                <h2 class="text-lg font-semibold text-zinc-900">Головне зображення</h2>
                 <div class="mt-4 space-y-3">
                     <div class="overflow-hidden rounded-xl border border-zinc-200">
                         <img src="{{ $work->main_image_url }}" alt="" class="h-48 w-full object-cover">
@@ -173,8 +173,8 @@
             </div>
 
             <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-zinc-900">Extra images</h2>
-                <p class="mt-1 text-sm text-zinc-500">Up to 3 images total. Remaining: {{ $remainingExtra }}</p>
+                <h2 class="text-lg font-semibold text-zinc-900">Додаткові зображення</h2>
+                <p class="mt-1 text-sm text-zinc-500">Максимум 3 зображення. Залишилось: {{ $remainingExtra }}</p>
 
                 @if ($workImages->count())
                     <div class="mt-4 grid grid-cols-3 gap-3">
@@ -185,9 +185,9 @@
                                     type="button"
                                     class="absolute right-1 top-1 rounded-full bg-black/60 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
                                     wire:click="deleteExtraImage({{ $image->id }})"
-                                    onclick="if (!confirm('Delete this image?')) { event.stopImmediatePropagation(); event.preventDefault(); }"
+                                    onclick="if (!confirm('Видалити це зображення?')) { event.stopImmediatePropagation(); event.preventDefault(); }"
                                 >
-                                    Remove
+                                    Видалити
                                 </button>
                             </div>
                         @endforeach
@@ -224,13 +224,13 @@
                     href="/admin/works"
                     class="inline-flex items-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
                 >
-                    Back
+                    Назад
                 </a>
                 <button
                     type="submit"
                     class="inline-flex items-center rounded-lg bg-zinc-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800"
                 >
-                    Save
+                    Зберегти
                 </button>
             </div>
         </div>

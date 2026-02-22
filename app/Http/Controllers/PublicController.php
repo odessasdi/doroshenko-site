@@ -89,11 +89,27 @@ class PublicController extends Controller
 
         $imageUrls = $work->imageUrls();
         $hasRealImages = $work->hasRealImages();
+        $moreWorksQuery = Work::query()
+            ->with('technique')
+            ->where('is_published', true)
+            ->where('id', '!=', $work->id);
+
+        if ($work->technique_id) {
+            $moreWorksQuery->where('technique_id', $work->technique_id);
+        }
+
+        $moreWorks = $moreWorksQuery
+            ->orderBy('sort_order')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit(6)
+            ->get();
 
         return view('public.work', [
             'work' => $work,
             'imageUrls' => $imageUrls,
             'hasRealImages' => $hasRealImages,
+            'moreWorks' => $moreWorks,
             'prevId' => $prevId,
             'nextId' => $nextId,
             'filters' => [

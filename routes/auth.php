@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\Auth\VerifyEmailController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 use Livewire\Volt\Volt;
 
 Route::middleware('guest')->group(function () {
@@ -10,6 +13,26 @@ Route::middleware('guest')->group(function () {
 
     Volt::route('login', 'pages.auth.login')
         ->name('login');
+
+    Route::post('login', function (Request $request) {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if (!Auth::attempt($credentials, (bool) $request->boolean('remember'))) {
+            throw ValidationException::withMessages([
+                'email' => 'Невірні облікові дані.',
+            ]);
+        }
+
+        $request->session()->regenerate();
+
+        $user = Auth::user();
+        $target = $user && $user->is_admin ? '/admin/works' : '/en';
+
+        return redirect()->intended($target);
+    })->name('login.attempt');
 
     Volt::route('forgot-password', 'pages.auth.forgot-password')
         ->name('password.request');

@@ -23,7 +23,7 @@ class RedirectIfAuthenticated
                 $user = Auth::guard($guard)->user();
 
                 if ($user && $user->is_admin) {
-                    return redirect('/admin/techniques');
+                    return redirect('/admin/works');
                 }
 
                 return redirect('/ua');

@@ -21,11 +21,15 @@ Route::prefix('{locale}')
         Route::get('/contacts', [PublicController::class, 'contacts'])->name('contacts');
     });
 
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/techniques', AdminTechniquesIndex::class)->name('admin.techniques');
-    Route::get('/admin/works', AdminWorksIndex::class)->name('admin.works.index');
-    Route::get('/admin/works/create', AdminWorksCreate::class)->name('admin.works.create');
-    Route::get('/admin/works/{work}/edit', AdminWorksEdit::class)->name('admin.works.edit');
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('admin.works.index');
+    });
+
+    Route::get('/techniques', AdminTechniquesIndex::class)->name('admin.techniques');
+    Route::get('/works', AdminWorksIndex::class)->name('admin.works.index');
+    Route::get('/works/create', AdminWorksCreate::class)->name('admin.works.create');
+    Route::get('/works/{work}/edit', AdminWorksEdit::class)->name('admin.works.edit');
 });
 //Route::view('/', 'welcome');
 

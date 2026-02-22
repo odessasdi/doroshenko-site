@@ -51,11 +51,17 @@
             </select>
         </div>
         <div class="flex items-end gap-3">
-            <button type="submit" class="inline-flex items-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800">
-                {{ $locale === 'de' ? 'Filtern' : ($locale === 'ua' ? 'Фільтрувати' : 'Filter') }}
+            <button
+                type="submit"
+                class="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium bg-zinc-900 text-white hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2"
+            >
+                {{ __('ui.filter') }}
             </button>
-            <a href="{{ route('gallery', ['locale' => $locale]) }}" class="text-sm text-zinc-600 hover:text-zinc-900">
-                {{ $locale === 'de' ? 'Zurücksetzen' : ($locale === 'ua' ? 'Скинути' : 'Reset') }}
+            <a
+                href="{{ route('gallery', ['locale' => $locale]) }}"
+                class="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2"
+            >
+                {{ __('ui.reset') }}
             </a>
         </div>
     </form>
@@ -72,12 +78,16 @@
                     $link .= '?' . http_build_query($query);
                 }
             @endphp
-            <a href="{{ $link }}" class="group text-left">
-                <div class="overflow-hidden rounded-2xl bg-zinc-100 shadow-sm ring-1 ring-zinc-200 transition group-hover:shadow-md flex items-center justify-center p-2 aspect-[4/5]">
+            <a
+                href="{{ $link }}"
+                class="group block rounded-2xl text-left no-underline hover:no-underline focus:no-underline focus-visible:no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white select-none"
+            >
+                <div class="h-[240px] sm:h-[260px] lg:h-[360px] overflow-hidden rounded-2xl bg-zinc-100 shadow-sm ring-1 ring-zinc-200 transition-shadow duration-200 group-hover:shadow-md flex items-center justify-center p-2 lg:p-3">
                     <img
                         src="{{ $work->mainImageUrl() }}"
                         alt="{{ $work->technique?->name($locale) ?? '' }}"
-                        class="h-full w-full object-contain"
+                        class="h-full w-full max-h-full max-w-full object-contain select-none"
+                        draggable="false"
                         loading="lazy"
                     >
                 </div>
