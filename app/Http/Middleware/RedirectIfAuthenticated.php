@@ -21,12 +21,18 @@ class RedirectIfAuthenticated
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
                 $user = Auth::guard($guard)->user();
+                $locale = app()->getLocale();
+                $supportedLocales = ['en', 'de', 'ua'];
+
+                if (!in_array($locale, $supportedLocales, true)) {
+                    $locale = 'en';
+                }
 
                 if ($user && $user->is_admin) {
                     return redirect('/admin/works');
                 }
 
-                return redirect('/ua');
+                return redirect()->route('pending-approval', ['locale' => $locale]);
             }
         }
 

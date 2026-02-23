@@ -19,6 +19,9 @@ Route::prefix('{locale}')
         Route::get('/gallery', [PublicController::class, 'gallery'])->name('gallery');
         Route::get('/gallery/{work}', [PublicController::class, 'galleryShow'])->name('gallery.show');
         Route::get('/contacts', [PublicController::class, 'contacts'])->name('contacts');
+        Route::view('/pending-approval', 'auth.pending-approval')
+            ->middleware('auth')
+            ->name('pending-approval');
     });
 
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {

@@ -29,7 +29,26 @@ Route::middleware('guest')->group(function () {
         $request->session()->regenerate();
 
         $user = Auth::user();
-        $target = $user && $user->is_admin ? '/admin/works' : '/en';
+        $locale = app()->getLocale();
+        $supportedLocales = ['en', 'de', 'ua'];
+
+        if (!in_array($locale, $supportedLocales, true)) {
+            $locale = 'en';
+        }
+
+        $isAdmin = (bool) ($user?->is_admin);
+        $target = $isAdmin
+            ? '/admin/works'
+            : route('pending-approval', ['locale' => $locale], false);
+
+        if (!$isAdmin) {
+            $intended = $request->session()->get('url.intended');
+            $intendedPath = is_string($intended) ? parse_url($intended, PHP_URL_PATH) : null;
+
+            if (is_string($intendedPath) && str_starts_with($intendedPath, '/admin')) {
+                $request->session()->forget('url.intended');
+            }
+        }
 
         return redirect()->intended($target);
     })->name('login.attempt');

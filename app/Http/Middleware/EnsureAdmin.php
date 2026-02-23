@@ -17,8 +17,19 @@ class EnsureAdmin
     {
         $user = $request->user();
 
-        if (!$user || $user->is_admin == false) {
+        if (!$user) {
             abort(403);
+        }
+
+        if (!$user->is_admin) {
+            $locale = app()->getLocale();
+            $supportedLocales = ['en', 'de', 'ua'];
+
+            if (!in_array($locale, $supportedLocales, true)) {
+                $locale = 'en';
+            }
+
+            return redirect()->route('pending-approval', ['locale' => $locale]);
         }
 
         return $next($request);

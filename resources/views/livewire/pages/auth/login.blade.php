@@ -21,7 +21,26 @@ new #[Layout('layouts.guest')] class extends Component
         Session::regenerate();
 
         $user = auth()->user();
-        $target = $user && $user->is_admin ? '/admin/works' : '/en';
+        $locale = app()->getLocale();
+        $supportedLocales = ['en', 'de', 'ua'];
+
+        if (!in_array($locale, $supportedLocales, true)) {
+            $locale = 'en';
+        }
+
+        $isAdmin = (bool) ($user?->is_admin);
+        $target = $isAdmin
+            ? '/admin/works'
+            : route('pending-approval', ['locale' => $locale], false);
+
+        if (!$isAdmin) {
+            $intended = Session::get('url.intended');
+            $intendedPath = is_string($intended) ? parse_url($intended, PHP_URL_PATH) : null;
+
+            if (is_string($intendedPath) && str_starts_with($intendedPath, '/admin')) {
+                Session::forget('url.intended');
+            }
+        }
 
         $this->redirectIntended(default: $target);
     }
