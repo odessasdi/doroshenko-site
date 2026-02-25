@@ -8,7 +8,7 @@
             href="/admin/works"
             class="inline-flex items-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
         >
-            Повернутися до списку
+            Назад до списку
         </a>
     </div>
 
@@ -174,7 +174,7 @@
 
             <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-semibold text-zinc-900">Додаткові зображення</h2>
-                <p class="mt-1 text-sm text-zinc-500">Максимум 3 зображення. Залишилось: {{ $remainingExtra }}</p>
+                <p class="mt-1 text-sm text-zinc-500">До 3 зображень. Залишилось: {{ $remainingExtra }}</p>
 
                 @if ($workImages->count())
                     <div class="mt-4 grid grid-cols-3 gap-3">
@@ -224,13 +224,13 @@
                     href="/admin/works"
                     class="inline-flex items-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
                 >
-                    Назад
+                    Назад до списку
                 </a>
                 <button
                     type="submit"
                     class="inline-flex items-center rounded-lg bg-zinc-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800"
                 >
-                    Зберегти
+                    Зберегти роботу
                 </button>
             </div>
         </div>
