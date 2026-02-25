@@ -12,7 +12,7 @@ class Index extends Component
     public string $name_de = '';
     public string $name_ua = '';
 
-    public function save(): void
+    public function save()
     {
         $data = $this->validate([
             'name_en' => ['required', 'string', 'max:255'],
@@ -22,13 +22,14 @@ class Index extends Component
 
         if ($this->editingId) {
             Technique::whereKey($this->editingId)->update($data);
-            session()->flash('success', 'Technique updated.');
+            session()->flash('success', 'Техніку оновлено.');
+            $this->resetForm();
         } else {
             Technique::create($data);
-            session()->flash('success', 'Technique created.');
-        }
+            session()->flash('success', 'Техніку створено.');
 
-        $this->resetForm();
+            return $this->redirectRoute('admin.techniques.index');
+        }
     }
 
     public function edit(int $id): void
@@ -44,7 +45,7 @@ class Index extends Component
     public function delete(int $id): void
     {
         Technique::whereKey($id)->delete();
-        session()->flash('success', 'Technique deleted.');
+        session()->flash('success', 'Техніку видалено.');
     }
 
     public function resetForm(): void

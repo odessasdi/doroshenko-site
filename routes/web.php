@@ -29,7 +29,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         return redirect()->route('admin.works.index');
     });
 
-    Route::get('/techniques', AdminTechniquesIndex::class)->name('admin.techniques');
+    Route::get('/techniques', AdminTechniquesIndex::class)->name('admin.techniques.index');
     Route::get('/works', AdminWorksIndex::class)->name('admin.works.index');
     Route::get('/works/create', AdminWorksCreate::class)->name('admin.works.create');
     Route::get('/works/{work}/edit', AdminWorksEdit::class)->name('admin.works.edit');

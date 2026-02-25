@@ -64,7 +64,7 @@
             </a>
             @auth
                 @if (auth()->user()->is_admin)
-                    <a href="{{ route('admin.techniques') }}" class="px-2 py-1 rounded-md text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100">Admin</a>
+                    <a href="{{ route('admin.techniques.index') }}" class="px-2 py-1 rounded-md text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100">Admin</a>
                 @endif
             @endauth
         </nav>
@@ -107,7 +107,7 @@
         @auth
             @if (auth()->user()->is_admin)
                 <a
-                    href="{{ route('admin.techniques') }}"
+                    href="{{ route('admin.techniques.index') }}"
                     class="block px-4 py-3 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
                 >
                     Admin
