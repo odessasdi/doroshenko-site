@@ -51,7 +51,9 @@ Route::middleware('guest')->group(function () {
         }
 
         return redirect()->intended($target);
-    })->name('login.attempt');
+    })
+        ->middleware('throttle:login')
+        ->name('login.attempt');
 
     Volt::route('forgot-password', 'pages.auth.forgot-password')
         ->name('password.request');

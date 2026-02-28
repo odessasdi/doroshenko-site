@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Панель адміністратора</title>
-    @vite(['resources/css/app.css','resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/admin.js'])
+    @livewireStyles
 </head>
 <body class="min-h-screen bg-white text-zinc-900">
     @php
@@ -33,5 +34,7 @@
     <main class="mx-auto max-w-6xl px-6 py-8">
         {{ $slot }}
     </main>
+
+    @livewireScripts
 </body>
 </html>

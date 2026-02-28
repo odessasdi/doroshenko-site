@@ -28,7 +28,7 @@ class Create extends Component
     public $main_image;
     public array $extra_images = [];
 
-    public function save(): void
+    public function save()
     {
         $data = $this->validate([
             'technique_id' => ['required', 'exists:techniques,id'],
@@ -80,9 +80,8 @@ class Create extends Component
             }
         });
 
-        session()->flash('success', 'Work created.');
-
-        $this->redirect('/admin/works', navigate: true);
+        session()->flash('success', 'Роботу створено.');
+        return $this->redirectRoute('admin.works.index');
     }
 
     private function toCents(string $value): int

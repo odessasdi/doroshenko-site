@@ -107,7 +107,8 @@
         </div>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+    <div class="rounded-2xl border border-zinc-200 bg-white shadow-sm">
+        <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
         <table class="min-w-full divide-y divide-zinc-200 text-sm">
             <thead class="bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
                 <tr>
@@ -183,8 +184,8 @@
                         </td>
                         <td class="px-4 py-3">{{ $work->sort_order }}</td>
                         <td class="px-4 py-3">{{ $work->created_at?->format('Y-m-d') }}</td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="flex justify-end gap-2">
+                        <td class="px-4 py-3 text-right whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-2">
                                 <a
                                     href="/admin/works/{{ $work->id }}/edit"
                                     class="rounded-lg border border-zinc-300 px-3 py-1 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50"
@@ -209,6 +210,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

@@ -34,15 +34,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/works/create', AdminWorksCreate::class)->name('admin.works.create');
     Route::get('/works/{work}/edit', AdminWorksEdit::class)->name('admin.works.edit');
 });
-//Route::view('/', 'welcome');
-
-//Route::view('dashboard', 'dashboard')
-  //  ->middleware(['auth', 'verified'])
-    //->name('dashboard');
-
-//Route::view('profile', 'profile')
-  //  ->middleware(['auth'])
-    //->name('profile');
 
 if (!Route::has('logout')) {
     Route::post('/logout', function (Request $request) {

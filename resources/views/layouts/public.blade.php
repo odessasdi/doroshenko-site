@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? config('app.name') }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/site.js'])
 </head>
 <body class="min-h-screen bg-white text-zinc-900">
 <header class="border-b border-zinc-200">
@@ -16,7 +16,6 @@
         <nav class="flex items-center gap-6 text-sm">
             <a href="{{ route('home', ['locale' => app()->getLocale()]) }}" class="hover:underline underline-offset-4">Home</a>
             <a href="{{ route('gallery', ['locale' => app()->getLocale()]) }}" class="hover:underline underline-offset-4">Gallery</a>
-            <a href="{{ route('about', ['locale' => app()->getLocale()]) }}" class="hover:underline underline-offset-4">About</a>
             <a href="{{ route('contacts', ['locale' => app()->getLocale()]) }}" class="hover:underline underline-offset-4">Contacts</a>
         </nav>
     </div>

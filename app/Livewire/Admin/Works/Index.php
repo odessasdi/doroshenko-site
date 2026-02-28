@@ -84,7 +84,7 @@ class Index extends Component
 
         $work->delete();
 
-        session()->flash('success', 'Work deleted.');
+        session()->flash('success', 'Роботу видалено.');
 
         $this->resetPage();
     }

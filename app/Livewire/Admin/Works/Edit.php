@@ -59,10 +59,10 @@ class Edit extends Component
 
         $image->delete();
 
-        session()->flash('success', 'Extra image deleted.');
+        session()->flash('success', 'Додаткове зображення видалено.');
     }
 
-    public function save(): void
+    public function save()
     {
         $remaining = $this->remainingExtraSlots();
 
@@ -127,7 +127,8 @@ class Edit extends Component
         $this->extra_images = [];
         $this->main_image = null;
 
-        session()->flash('success', 'Work updated.');
+        session()->flash('success', 'Роботу оновлено.');
+        return $this->redirectRoute('admin.works.index');
     }
 
     private function remainingExtraSlots(): int
