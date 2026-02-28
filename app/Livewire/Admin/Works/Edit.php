@@ -29,7 +29,7 @@ class Edit extends Component
     public int $sort_order = 0;
 
     public $main_image;
-    public array $extra_images = [];
+    public array $additional_images = [];
 
     public function mount(Work $work): void
     {
@@ -54,7 +54,7 @@ class Edit extends Component
         $image = WorkImage::where('work_id', $this->work->id)->whereKey($id)->firstOrFail();
 
         if ($image->image_path) {
-            Storage::delete($image->image_path);
+            Storage::disk('public')->delete($image->image_path);
         }
 
         $image->delete();
@@ -79,8 +79,8 @@ class Edit extends Component
             'is_published' => ['boolean'],
             'sort_order' => ['integer'],
             'main_image' => ['nullable', 'image', 'max:8192'],
-            'extra_images' => ['nullable', 'array', 'max:'.$remaining],
-            'extra_images.*' => ['image', 'max:8192'],
+            'additional_images' => ['nullable', 'array', 'max:'.$remaining],
+            'additional_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         $priceCents = $this->price !== null && $this->price !== ''
@@ -111,8 +111,8 @@ class Edit extends Component
 
             $nextSort = (int) ($this->work->images()->max('sort_order') ?? -1) + 1;
 
-            foreach ($this->extra_images as $image) {
-                $path = $image->store('works/extra', 'public');
+            foreach ($this->additional_images as $image) {
+                $path = $image->store('works/additional', 'public');
 
                 WorkImage::create([
                     'work_id' => $this->work->id,
@@ -124,7 +124,7 @@ class Edit extends Component
             }
         });
 
-        $this->extra_images = [];
+        $this->additional_images = [];
         $this->main_image = null;
 
         session()->flash('success', 'Роботу оновлено.');

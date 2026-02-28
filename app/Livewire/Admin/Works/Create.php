@@ -26,7 +26,7 @@ class Create extends Component
     public int $sort_order = 0;
 
     public $main_image;
-    public array $extra_images = [];
+    public array $additional_images = [];
 
     public function save()
     {
@@ -43,8 +43,8 @@ class Create extends Component
             'is_published' => ['boolean'],
             'sort_order' => ['integer'],
             'main_image' => ['required', 'image', 'max:8192'],
-            'extra_images' => ['nullable', 'array', 'max:3'],
-            'extra_images.*' => ['image', 'max:8192'],
+            'additional_images' => ['nullable', 'array', 'max:3'],
+            'additional_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         $priceCents = $this->price !== null && $this->price !== ''
@@ -69,8 +69,8 @@ class Create extends Component
                 'sort_order' => $data['sort_order'],
             ]);
 
-            foreach ($this->extra_images as $index => $image) {
-                $path = $image->store('works/extra', 'public');
+            foreach ($this->additional_images as $index => $image) {
+                $path = $image->store('works/additional', 'public');
 
                 WorkImage::create([
                     'work_id' => $work->id,
@@ -105,6 +105,7 @@ class Create extends Component
 
         return view('livewire.admin.works.create', [
             'techniques' => $techniques,
+            'remainingAdditional' => max(0, 3 - count($this->additional_images)),
         ]);
     }
 }

@@ -196,20 +196,21 @@
 
                 <div class="mt-4 space-y-3">
                     <input
-                        id="extra_images"
+                        id="additional_images"
+                        name="additional_images[]"
                         type="file"
                         multiple
                         accept="image/*"
                         class="block w-full text-sm text-zinc-600 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-zinc-800"
-                        wire:model="extra_images"
+                        wire:model="additional_images"
                         @if ($remainingExtra === 0) disabled @endif
                     >
-                    @error('extra_images') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
-                    @error('extra_images.*') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                    @error('additional_images') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                    @error('additional_images.*') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
 
-                    @if ($extra_images)
+                    @if ($additional_images)
                         <div class="grid grid-cols-3 gap-3">
-                            @foreach ($extra_images as $image)
+                            @foreach ($additional_images as $image)
                                 <div class="overflow-hidden rounded-lg border border-zinc-200">
                                     <img src="{{ $image->temporaryUrl() }}" alt="" class="h-20 w-full object-cover">
                                 </div>
