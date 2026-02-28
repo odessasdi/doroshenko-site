@@ -124,7 +124,7 @@
 <footer class="border-t border-zinc-100">
     <div class="mx-auto max-w-6xl px-6 py-6 text-xs text-zinc-500 flex justify-between lg:px-8">
         <div>© 2026</div>
-        <div class="hidden sm:block">Portfolio</div>
+        <div class="hidden sm:block">ceo.equalympic@gmail.com</div>
     </div>
 </footer>
 </div>

@@ -1,13 +1,6 @@
 <x-layouts.public :title="__('ui.gallery')">
     @php
         $locale = app()->getLocale();
-        $priceLabel = function ($work) use ($locale) {
-            if (!$work->price_cents || !$work->currency) {
-                return $locale === 'de' ? 'Preis auf Anfrage' : ($locale === 'ua' ? 'Ціна за запитом' : 'Price on request');
-            }
-            $amount = number_format($work->price_cents / 100, 0, '.', ',');
-            return $work->currency . ' ' . $amount;
-        };
     @endphp
 
     <div class="flex items-end justify-between gap-6">
@@ -19,7 +12,7 @@
         </div>
     </div>
 
-    <form method="GET" action="{{ route('gallery', ['locale' => $locale]) }}" class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <form id="gallery-filter-form" method="GET" action="{{ route('gallery', ['locale' => $locale]) }}" class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
             <label class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                 {{ $locale === 'de' ? 'Technik' : ($locale === 'ua' ? 'Техніка' : 'Technique') }}
@@ -51,60 +44,166 @@
             </select>
         </div>
         <div class="flex items-end gap-3">
-            <button
-                type="submit"
-                class="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium bg-zinc-900 text-white hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2"
-            >
-                {{ __('ui.filter') }}
-            </button>
             <a
                 href="{{ route('gallery', ['locale' => $locale]) }}"
-                class="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2"
+                class="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-2 text-sm font-semibold text-zinc-800 shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-400 hover:bg-white hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2"
             >
+                <span aria-hidden="true">↺</span>
                 {{ __('ui.reset') }}
             </a>
+            <noscript>
+                <button
+                    type="submit"
+                    class="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium bg-zinc-900 text-white hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2"
+                >
+                    {{ __('ui.filter') }}
+                </button>
+            </noscript>
         </div>
     </form>
 
-    <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        @forelse ($works as $work)
-            @php
-                $query = array_filter([
-                    'technique' => $filters['technique'] ?? null,
-                    'year' => $filters['year'] ?? null,
-                ]);
-                $link = route('gallery.show', ['locale' => $locale, 'work' => $work->id]);
-                if (!empty($query)) {
-                    $link .= '?' . http_build_query($query);
-                }
-            @endphp
-            <a
-                href="{{ $link }}"
-                class="group block rounded-2xl text-left no-underline hover:no-underline focus:no-underline focus-visible:no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white select-none"
-            >
-                <div class="h-[240px] sm:h-[260px] lg:h-[360px] overflow-hidden rounded-2xl bg-zinc-100 shadow-sm ring-1 ring-zinc-200 transition-shadow duration-200 group-hover:shadow-md flex items-center justify-center p-2 lg:p-3">
-                    <img
-                        src="{{ $work->mainImageUrl() }}"
-                        alt="{{ $work->technique?->name($locale) ?? '' }}"
-                        class="h-full w-full max-h-full max-w-full object-contain select-none"
-                        draggable="false"
-                        loading="lazy"
-                    >
-                </div>
-                <div class="mt-3 text-sm text-zinc-500">{{ $work->technique?->name($locale) ?? '—' }}</div>
-                <div class="mt-1 text-lg font-semibold text-zinc-900">
-                    {{ $work->year ?? '—' }} · {{ $work->size_label ?? '—' }}
-                </div>
-                <div class="mt-1 text-sm text-zinc-600">{{ $priceLabel($work) }}</div>
-            </a>
-        @empty
-            <div class="text-sm text-zinc-500">
-                {{ $locale === 'de' ? 'Keine Werke gefunden.' : ($locale === 'ua' ? 'Робіт не знайдено.' : 'No works found.') }}
+    <div class="relative">
+        <div id="gallery-loading" class="pointer-events-none absolute inset-0 z-10 hidden items-center justify-center">
+            <div class="flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm text-zinc-700 shadow">
+                <span class="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-700"></span>
+                <span>Завантаження...</span>
             </div>
-        @endforelse
+        </div>
+        <div id="gallery-results" class="transition-opacity duration-200">
+            @include('public.partials.gallery-results', [
+                'works' => $works,
+                'filters' => $filters,
+                'locale' => $locale,
+            ])
+        </div>
     </div>
 
-    <div class="mt-10">
-        {{ $works->links() }}
-    </div>
+    <script>
+        (() => {
+            const form = document.getElementById('gallery-filter-form');
+            const results = document.getElementById('gallery-results');
+            const loading = document.getElementById('gallery-loading');
+
+            if (!form || !results || !loading) {
+                return;
+            }
+
+            let debounceTimer = null;
+            let currentRequest = null;
+
+            const setLoading = (isLoading) => {
+                results.classList.toggle('opacity-50', isLoading);
+                loading.classList.toggle('hidden', !isLoading);
+                loading.classList.toggle('flex', isLoading);
+            };
+
+            const syncFormFromUrl = (url) => {
+                const parsed = new URL(url, window.location.origin);
+                Array.from(form.elements).forEach((element) => {
+                    if (!element.name) return;
+                    const value = parsed.searchParams.get(element.name) ?? '';
+                    if (element.type === 'checkbox') {
+                        element.checked = parsed.searchParams.has(element.name);
+                    } else {
+                        element.value = value;
+                    }
+                });
+            };
+
+            const buildUrlFromForm = () => {
+                const url = new URL(form.action, window.location.origin);
+                const formData = new FormData(form);
+                for (const [key, value] of formData.entries()) {
+                    if (value !== null && String(value).trim() !== '') {
+                        url.searchParams.append(key, value);
+                    }
+                }
+                return url;
+            };
+
+            const updateResults = async (url, { push = true } = {}) => {
+                if (currentRequest) {
+                    currentRequest.abort();
+                }
+                currentRequest = new AbortController();
+
+                setLoading(true);
+                try {
+                    const response = await fetch(url.toString(), {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html',
+                        },
+                        signal: currentRequest.signal,
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Request failed');
+                    }
+
+                    const html = await response.text();
+                    results.innerHTML = html;
+
+                    if (push) {
+                        window.history.pushState({}, '', url.toString());
+                    }
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        form.submit();
+                    }
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                updateResults(buildUrlFromForm());
+            });
+
+            form.addEventListener('change', (event) => {
+                const target = event.target;
+                if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement)) {
+                    return;
+                }
+                updateResults(buildUrlFromForm());
+            });
+
+            form.addEventListener('input', (event) => {
+                const target = event.target;
+                if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) {
+                    return;
+                }
+                if (!['text', 'search', 'email', 'number', 'url', 'tel'].includes(target.type)) {
+                    return;
+                }
+
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    updateResults(buildUrlFromForm());
+                }, 300);
+            });
+
+            results.addEventListener('click', (event) => {
+                const link = event.target.closest('a');
+                if (!link) return;
+                if (!link.href || link.target === '_blank' || link.hasAttribute('download')) return;
+                if (!link.closest('nav[role="navigation"]')) return;
+                if (link.origin !== window.location.origin) return;
+                if (!link.pathname.includes('/gallery')) return;
+
+                event.preventDefault();
+                const url = new URL(link.href);
+                syncFormFromUrl(url.toString());
+                updateResults(url);
+            });
+
+            window.addEventListener('popstate', () => {
+                const currentUrl = new URL(window.location.href);
+                syncFormFromUrl(currentUrl.toString());
+                updateResults(currentUrl, { push: false });
+            });
+        })();
+    </script>
 </x-layouts.public>

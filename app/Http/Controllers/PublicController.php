@@ -42,15 +42,22 @@ class PublicController extends Controller
             ->orderByDesc('year')
             ->pluck('year');
 
-        return view('public.gallery', [
+        $viewData = [
             'works' => $works,
             'techniques' => $techniques,
             'years' => $years,
+            'locale' => app()->getLocale(),
             'filters' => [
                 'technique' => $techniqueId,
                 'year' => $year,
             ],
-        ]);
+        ];
+
+        if ($request->ajax()) {
+            return view('public.partials.gallery-results', $viewData);
+        }
+
+        return view('public.gallery', $viewData);
     }
 
     public function galleryShow(string $locale, Request $request, Work $work): View

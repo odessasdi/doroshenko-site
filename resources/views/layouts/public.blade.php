@@ -28,7 +28,7 @@
 <footer class="border-t border-zinc-200">
     <div class="mx-auto max-w-6xl px-6 py-6 text-sm text-zinc-500 flex justify-between">
         <div>© {{ date('Y') }}</div>
-        <div class="hidden sm:block">Portfolio</div>
+        <div class="hidden sm:block">ceo.equalympic@gmail.com</div>
     </div>
 </footer>
 </body>
