@@ -11,6 +11,7 @@
     @php
         $isWorks = request()->is('admin/works*');
         $isTechniques = request()->is('admin/techniques*');
+        $isStatistics = request()->is('admin/statistics*');
         $menuBase = 'px-3 py-2 rounded-lg text-sm';
         $menuDefault = $menuBase . ' text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100';
         $menuActive = $menuBase . ' font-medium text-zinc-900 bg-zinc-200';
@@ -20,6 +21,7 @@
             <div class="flex items-center gap-6">
                 <div class="text-lg font-semibold tracking-tight">Панель адміністратора</div>
                 <nav class="flex items-center gap-2">
+                    <a href="/admin/statistics" class="{{ $isStatistics ? $menuActive : $menuDefault }}">Статистика</a>
                     <a href="/admin/works" class="{{ $isWorks ? $menuActive : $menuDefault }}">Роботи</a>
                     <a href="/admin/techniques" class="{{ $isTechniques ? $menuActive : $menuDefault }}">Техніки</a>
                 </nav>

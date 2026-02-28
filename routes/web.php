@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\Admin\StatisticsController;
 use App\Livewire\Admin\Techniques\Index as AdminTechniquesIndex;
 use App\Livewire\Admin\Works\Create as AdminWorksCreate;
 use App\Livewire\Admin\Works\Edit as AdminWorksEdit;
@@ -30,6 +31,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     });
 
     Route::get('/techniques', AdminTechniquesIndex::class)->name('admin.techniques.index');
+    Route::get('/statistics', [StatisticsController::class, 'index'])->name('admin.statistics');
     Route::get('/works', AdminWorksIndex::class)->name('admin.works.index');
     Route::get('/works/create', AdminWorksCreate::class)->name('admin.works.create');
     Route::get('/works/{work}/edit', AdminWorksEdit::class)->name('admin.works.edit');
