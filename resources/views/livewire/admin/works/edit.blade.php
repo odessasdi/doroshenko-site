@@ -18,10 +18,29 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <form wire:submit="save" class="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div class="space-y-6">
             <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-zinc-900">Деталі</h2>
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h2 class="text-lg font-semibold text-zinc-900">Деталі</h2>
+                    <button
+                        type="button"
+                        class="inline-flex items-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        wire:click="generateDescriptions"
+                        wire:loading.attr="disabled"
+                        wire:target="generateDescriptions"
+                        onclick="const hasDescriptions = ['description_ua', 'description_en', 'description_de'].some((id) => document.getElementById(id)?.value.trim() !== ''); if (hasDescriptions && !confirm('Перезаписати поточні описи AI-генерацією?')) { event.stopImmediatePropagation(); event.preventDefault(); }"
+                    >
+                        <span wire:loading.remove wire:target="generateDescriptions">ЗГЕНЕРУВАТИ ОПИС</span>
+                        <span wire:loading wire:target="generateDescriptions">Генеруємо опис...</span>
+                    </button>
+                </div>
                 <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                         <label class="text-sm font-medium text-zinc-700" for="technique_id">Техніка</label>

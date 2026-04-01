@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Admin\Works;
 
+use App\Exceptions\WorkDescriptionGenerationException;
 use App\Models\Technique;
 use App\Models\Work;
 use App\Models\WorkImage;
+use App\Services\WorkDescriptionGenerationService;
 use App\Services\WorkImageStorageService;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -28,6 +30,35 @@ class Create extends Component
 
     public $main_image;
     public array $additional_images = [];
+
+    public function generateDescriptions(): void
+    {
+        if (! $this->main_image) {
+            session()->flash('error', 'Спочатку завантажте головне зображення.');
+
+            return;
+        }
+
+        $this->resetErrorBag(['main_image', 'description_ua', 'description_en', 'description_de']);
+
+        $this->validate([
+            'main_image' => WorkImageStorageService::requiredRules(),
+        ]);
+
+        try {
+            $descriptions = app(WorkDescriptionGenerationService::class)->generateFromUpload($this->main_image);
+        } catch (WorkDescriptionGenerationException $exception) {
+            session()->flash('error', $exception->getMessage());
+
+            return;
+        }
+
+        $this->description_ua = $descriptions['ua'];
+        $this->description_en = $descriptions['en'];
+        $this->description_de = $descriptions['de'];
+
+        session()->flash('success', 'Описи згенеровано.');
+    }
 
     public function save()
     {
