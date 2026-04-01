@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Works;
 use App\Models\Technique;
 use App\Models\Work;
 use App\Models\WorkImage;
+use App\Services\WorkImageStorageService;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -42,17 +43,19 @@ class Create extends Component
             'description_ua' => ['nullable', 'string'],
             'is_published' => ['boolean'],
             'sort_order' => ['integer'],
-            'main_image' => ['required', 'image', 'max:8192'],
+            'main_image' => WorkImageStorageService::requiredRules(),
             'additional_images' => ['nullable', 'array', 'max:3'],
-            'additional_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'additional_images.*' => WorkImageStorageService::itemRules(),
         ]);
 
         $priceCents = $this->price !== null && $this->price !== ''
             ? $this->toCents($this->price)
             : null;
 
-        DB::transaction(function () use ($data, $priceCents) {
-            $mainPath = $this->main_image->store('works/main', 'public');
+        $imageStorage = app(WorkImageStorageService::class);
+
+        DB::transaction(function () use ($data, $priceCents, $imageStorage) {
+            $mainPath = $imageStorage->store($this->main_image, 'works/main', 'main_image');
 
             $work = Work::create([
                 'technique_id' => $data['technique_id'],
@@ -70,7 +73,7 @@ class Create extends Component
             ]);
 
             foreach ($this->additional_images as $index => $image) {
-                $path = $image->store('works/additional', 'public');
+                $path = $imageStorage->store($image, 'works/additional', "additional_images.$index");
 
                 WorkImage::create([
                     'work_id' => $work->id,

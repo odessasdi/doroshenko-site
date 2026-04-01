@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Works;
 use App\Models\Technique;
 use App\Models\Work;
 use App\Models\WorkImage;
+use App\Services\WorkImageStorageService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -78,22 +79,24 @@ class Edit extends Component
             'description_ua' => ['nullable', 'string'],
             'is_published' => ['boolean'],
             'sort_order' => ['integer'],
-            'main_image' => ['nullable', 'image', 'max:8192'],
+            'main_image' => WorkImageStorageService::optionalRules(),
             'additional_images' => ['nullable', 'array', 'max:'.$remaining],
-            'additional_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'additional_images.*' => WorkImageStorageService::itemRules(),
         ]);
 
         $priceCents = $this->price !== null && $this->price !== ''
             ? $this->toCents($this->price)
             : null;
 
-        DB::transaction(function () use ($data, $priceCents) {
+        $imageStorage = app(WorkImageStorageService::class);
+
+        DB::transaction(function () use ($data, $priceCents, $imageStorage) {
             if ($this->main_image) {
                 if ($this->work->main_image_path) {
-                    Storage::delete($this->work->main_image_path);
+                    Storage::disk('public')->delete($this->work->main_image_path);
                 }
 
-                $this->work->main_image_path = $this->main_image->store('works/main', 'public');
+                $this->work->main_image_path = $imageStorage->store($this->main_image, 'works/main', 'main_image');
             }
 
             $this->work->technique_id = $data['technique_id'];
@@ -112,7 +115,7 @@ class Edit extends Component
             $nextSort = (int) ($this->work->images()->max('sort_order') ?? -1) + 1;
 
             foreach ($this->additional_images as $image) {
-                $path = $image->store('works/additional', 'public');
+                $path = $imageStorage->store($image, 'works/additional', 'additional_image');
 
                 WorkImage::create([
                     'work_id' => $this->work->id,

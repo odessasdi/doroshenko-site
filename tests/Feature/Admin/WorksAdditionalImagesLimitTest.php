@@ -17,17 +17,25 @@ class WorksAdditionalImagesLimitTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_create_rejects_more_than_three_additional_images(): void
+    private Technique $technique;
+
+    protected function setUp(): void
     {
-        Storage::fake('public');
-        $technique = Technique::create([
+        parent::setUp();
+
+        $this->technique = Technique::create([
             'name_en' => 'Oil',
             'name_de' => 'Ol',
             'name_ua' => 'Олія',
         ]);
+    }
+
+    public function test_create_rejects_more_than_three_additional_images(): void
+    {
+        Storage::fake('public');
 
         Livewire::test(Create::class)
-            ->set('technique_id', $technique->id)
+            ->set('technique_id', $this->technique->id)
             ->set('is_published', true)
             ->set('sort_order', 0)
             ->set('main_image', UploadedFile::fake()->image('main.jpg'))
@@ -44,14 +52,9 @@ class WorksAdditionalImagesLimitTest extends TestCase
     public function test_edit_rejects_when_total_additional_images_exceeds_three(): void
     {
         Storage::fake('public');
-        $technique = Technique::create([
-            'name_en' => 'Oil',
-            'name_de' => 'Ol',
-            'name_ua' => 'Олія',
-        ]);
 
         $work = Work::create([
-            'technique_id' => $technique->id,
+            'technique_id' => $this->technique->id,
             'main_image_path' => 'works/main/existing.jpg',
             'is_published' => true,
             'sort_order' => 0,
@@ -69,7 +72,7 @@ class WorksAdditionalImagesLimitTest extends TestCase
         ]);
 
         Livewire::test(Edit::class, ['work' => $work])
-            ->set('technique_id', $technique->id)
+            ->set('technique_id', $this->technique->id)
             ->set('is_published', true)
             ->set('sort_order', 0)
             ->set('additional_images', [
@@ -78,5 +81,96 @@ class WorksAdditionalImagesLimitTest extends TestCase
             ])
             ->call('save')
             ->assertHasErrors(['additional_images' => 'max']);
+    }
+
+    public function test_create_compresses_and_stores_main_image_on_public_disk(): void
+    {
+        Storage::fake('public');
+        $source = $this->makeLargeImage('large-main.jpg', 4200, 3200);
+
+        Livewire::test(Create::class)
+            ->set('technique_id', $this->technique->id)
+            ->set('is_published', true)
+            ->set('sort_order', 0)
+            ->set('main_image', $source)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $work = Work::query()->latest('id')->firstOrFail();
+
+        $this->assertStringStartsWith('works/main/', $work->main_image_path);
+        Storage::disk('public')->assertExists($work->main_image_path);
+        $this->assertLessThan(2_000_000, Storage::disk('public')->size($work->main_image_path));
+    }
+
+    public function test_edit_replaces_main_image_and_deletes_old_file(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('works/main/existing.jpg', str_repeat('a', 100));
+
+        $work = Work::create([
+            'technique_id' => $this->technique->id,
+            'main_image_path' => 'works/main/existing.jpg',
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        Livewire::test(Edit::class, ['work' => $work])
+            ->set('technique_id', $this->technique->id)
+            ->set('is_published', true)
+            ->set('sort_order', 0)
+            ->set('main_image', $this->makeLargeImage('replacement.jpg', 4000, 2800))
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $work->refresh();
+
+        Storage::disk('public')->assertMissing('works/main/existing.jpg');
+        Storage::disk('public')->assertExists($work->main_image_path);
+        $this->assertNotSame('works/main/existing.jpg', $work->main_image_path);
+        $this->assertLessThan(2_000_000, Storage::disk('public')->size($work->main_image_path));
+    }
+
+    public function test_create_compresses_additional_images_with_current_paths(): void
+    {
+        Storage::fake('public');
+
+        Livewire::test(Create::class)
+            ->set('technique_id', $this->technique->id)
+            ->set('is_published', true)
+            ->set('sort_order', 0)
+            ->set('main_image', $this->makeLargeImage('main.jpg', 3600, 2600))
+            ->set('additional_images', [
+                $this->makeLargeImage('detail.png', 3800, 2800),
+            ])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $image = WorkImage::query()->sole();
+
+        $this->assertStringStartsWith('works/additional/', $image->image_path);
+        Storage::disk('public')->assertExists($image->image_path);
+        $this->assertLessThan(2_000_000, Storage::disk('public')->size($image->image_path));
+    }
+
+    private function makeLargeImage(string $name, int $width, int $height): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'work-image-');
+        $image = imagecreatetruecolor($width, $height);
+
+        for ($x = 0; $x < $width; $x += 80) {
+            for ($y = 0; $y < $height; $y += 80) {
+                $color = imagecolorallocate($image, ($x * 13) % 255, ($y * 17) % 255, (($x + $y) * 19) % 255);
+                imagefilledrectangle($image, $x, $y, min($x + 79, $width - 1), min($y + 79, $height - 1), $color);
+            }
+        }
+
+        imagejpeg($image, $path, 100);
+        imagedestroy($image);
+
+        $contents = file_get_contents($path);
+        unlink($path);
+
+        return UploadedFile::fake()->createWithContent($name, $contents ?: '');
     }
 }

@@ -73,12 +73,12 @@ class Index extends Component
         $work = Work::with('images')->findOrFail($id);
 
         if ($work->main_image_path) {
-            Storage::delete($work->main_image_path);
+            Storage::disk('public')->delete($work->main_image_path);
         }
 
         foreach ($work->images as $image) {
             if ($image->image_path) {
-                Storage::delete($image->image_path);
+                Storage::disk('public')->delete($image->image_path);
             }
         }
 
