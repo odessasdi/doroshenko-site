@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Works;
 
+use App\Livewire\Admin\Works\Concerns\UsesPaperSizePresets;
 use App\Exceptions\WorkDescriptionGenerationException;
 use App\Models\Technique;
 use App\Models\Work;
@@ -16,6 +17,7 @@ use Livewire\WithFileUploads;
 class Edit extends Component
 {
     use WithFileUploads;
+    use UsesPaperSizePresets;
 
     public Work $work;
 
@@ -199,6 +201,7 @@ class Edit extends Component
             'techniques' => $techniques,
             'workImages' => $workImages,
             'remainingExtra' => $this->remainingExtraSlots(),
+            'paperPresets' => $this->paperPresets(),
         ]);
     }
 }

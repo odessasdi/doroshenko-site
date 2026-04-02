@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Works;
 
+use App\Livewire\Admin\Works\Concerns\UsesPaperSizePresets;
 use App\Exceptions\WorkDescriptionGenerationException;
 use App\Models\Technique;
 use App\Models\Work;
@@ -15,6 +16,7 @@ use Livewire\WithFileUploads;
 class Create extends Component
 {
     use WithFileUploads;
+    use UsesPaperSizePresets;
 
     public ?int $technique_id = null;
     public ?int $year = null;
@@ -140,6 +142,7 @@ class Create extends Component
         return view('livewire.admin.works.create', [
             'techniques' => $techniques,
             'remainingAdditional' => max(0, 3 - count($this->additional_images)),
+            'paperPresets' => $this->paperPresets(),
         ]);
     }
 }

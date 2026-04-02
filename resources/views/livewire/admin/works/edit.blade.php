@@ -66,6 +66,7 @@
                         >
                         @error('year') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
+                    @include('livewire.admin.works.partials.paper-presets', ['confirmOnChange' => true])
                     <div>
                         <label class="text-sm font-medium text-zinc-700" for="size_w_mm">Ширина (мм)</label>
                         <input
