@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'setlocale' => \App\Http\Middleware\SetLocale::class,
+            'adminlocale' => \App\Http\Middleware\AdminLocale::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
         ]);

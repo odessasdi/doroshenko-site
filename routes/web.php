@@ -25,7 +25,7 @@ Route::prefix('{locale}')
             ->name('pending-approval');
     });
 
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'admin', 'adminlocale'])->group(function () {
     Route::get('/', function () {
         return redirect()->route('admin.works.index');
     });
