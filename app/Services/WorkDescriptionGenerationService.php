@@ -42,6 +42,16 @@ Generate descriptions in three languages with the same meaning:
 - English
 - German
 
+Each JSON field must contain only its own language version:
+- "ua" must contain only Ukrainian text
+- "en" must contain only English text
+- "de" must contain only German text
+
+Do not combine multiple languages in one field.
+Do not put all descriptions into a single JSON value.
+Do not use prefixes such as "UA:", "EN:", or "DE:" inside the values.
+Each field must contain the complete structure for its language, not just a title.
+
 For each language, follow this structure strictly:
 
 1. Line 1:
@@ -194,6 +204,8 @@ TEXT;
             if (! isset($decoded[$locale]) || ! is_string($decoded[$locale]) || trim($decoded[$locale]) === '') {
                 throw new WorkDescriptionGenerationException('Missing locale in OpenAI output.');
             }
+
+            $this->assertLocaleStructure($locale, trim($decoded[$locale]));
         }
 
         return [
@@ -231,5 +243,41 @@ TEXT;
         }
 
         return trim($outputText);
+    }
+
+    private function assertLocaleStructure(string $locale, string $value): void
+    {
+        $disallowedMarkers = match ($locale) {
+            'ua' => ['EN:', 'DE:', 'Style:', 'Mood:', 'Stil:', 'Stimmung:'],
+            'en' => ['UA:', 'DE:', 'Стиль:', 'Настрій:', 'Stil:', 'Stimmung:'],
+            'de' => ['UA:', 'EN:', 'Стиль:', 'Настрій:', 'Style:', 'Mood:'],
+            default => [],
+        };
+
+        foreach ($disallowedMarkers as $marker) {
+            if (str_contains($value, $marker)) {
+                throw new WorkDescriptionGenerationException('Mixed-language OpenAI output.');
+            }
+        }
+
+        $requiredLabels = match ($locale) {
+            'ua' => ['Стиль:', 'Настрій:'],
+            'en' => ['Style:', 'Mood:'],
+            'de' => ['Stil:', 'Stimmung:'],
+            default => [],
+        };
+
+        foreach ($requiredLabels as $label) {
+            if (! str_contains($value, $label)) {
+                throw new WorkDescriptionGenerationException('Incomplete OpenAI output structure.');
+            }
+        }
+
+        $blocks = preg_split('/\R{2,}/u', $value) ?: [];
+        $blocks = array_values(array_filter(array_map('trim', $blocks), static fn (string $block) => $block !== ''));
+
+        if (count($blocks) < 4) {
+            throw new WorkDescriptionGenerationException('Incomplete OpenAI output structure.');
+        }
     }
 }

@@ -63,6 +63,8 @@ class WorkDescriptionGenerationTest extends TestCase
             return $request->url() === 'https://api.openai.test/v1/responses'
                 && str_contains($prompt, 'Style: ...')
                 && str_contains($prompt, 'Mood: ...')
+                && str_contains($prompt, 'Do not combine multiple languages in one field.')
+                && str_contains($prompt, 'Each field must contain the complete structure for its language, not just a title.')
                 && str_contains($prompt, 'Return only valid JSON');
         });
     }
@@ -84,9 +86,9 @@ class WorkDescriptionGenerationTest extends TestCase
                 'output' => [[
                     'content' => [[
                         'text' => json_encode([
-                            'ua' => 'UA text',
-                            'en' => 'EN text',
-                            'de' => 'DE text',
+                            'ua' => "Назва\n\nАбзац один\n\nАбзац два\n\nСтиль: мінімалізм\nНастрій: баланс",
+                            'en' => "Title\n\nParagraph one\n\nParagraph two\n\nStyle: minimalism\nMood: balance",
+                            'de' => "Titel\n\nAbsatz eins\n\nAbsatz zwei\n\nStil: Minimalismus\nStimmung: Balance",
                         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                     ]],
                 ]],
@@ -95,9 +97,9 @@ class WorkDescriptionGenerationTest extends TestCase
 
         Livewire::test(Edit::class, ['work' => $work])
             ->call('generateDescriptions')
-            ->assertSet('description_ua', 'UA text')
-            ->assertSet('description_en', 'EN text')
-            ->assertSet('description_de', 'DE text');
+            ->assertSet('description_ua', "Назва\n\nАбзац один\n\nАбзац два\n\nСтиль: мінімалізм\nНастрій: баланс")
+            ->assertSet('description_en', "Title\n\nParagraph one\n\nParagraph two\n\nStyle: minimalism\nMood: balance")
+            ->assertSet('description_de', "Titel\n\nAbsatz eins\n\nAbsatz zwei\n\nStil: Minimalismus\nStimmung: Balance");
     }
 
     public function test_invalid_openai_response_does_not_overwrite_existing_descriptions(): void
@@ -105,6 +107,29 @@ class WorkDescriptionGenerationTest extends TestCase
         Http::fake([
             'https://api.openai.test/v1/responses' => Http::response([
                 'output_text' => 'not valid json',
+            ]),
+        ]);
+
+        Livewire::test(Create::class)
+            ->set('main_image', UploadedFile::fake()->image('main.jpg', 1200, 900))
+            ->set('description_ua', 'Existing UA')
+            ->set('description_en', 'Existing EN')
+            ->set('description_de', 'Existing DE')
+            ->call('generateDescriptions')
+            ->assertSet('description_ua', 'Existing UA')
+            ->assertSet('description_en', 'Existing EN')
+            ->assertSet('description_de', 'Existing DE');
+    }
+
+    public function test_mixed_language_openai_response_does_not_overwrite_existing_descriptions(): void
+    {
+        Http::fake([
+            'https://api.openai.test/v1/responses' => Http::response([
+                'output_text' => json_encode([
+                    'ua' => 'Гірський пейзаж у блакиті',
+                    'en' => 'Mountain Landscape in Blue',
+                    'de' => "UA: Картина зображує гірський пейзаж.\n\nEN: This artwork portrays a mountainous landscape.\n\nDE: Das Bild zeigt eine Berglandschaft.\n\nStyle: impressionism\nMood: calm",
+                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             ]),
         ]);
 
