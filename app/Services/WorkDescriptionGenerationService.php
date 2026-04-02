@@ -273,11 +273,30 @@ TEXT;
             }
         }
 
-        $blocks = preg_split('/\R{2,}/u', $value) ?: [];
-        $blocks = array_values(array_filter(array_map('trim', $blocks), static fn (string $block) => $block !== ''));
+        $normalized = preg_replace('/\R/u', "\n", $value) ?? $value;
+        $lines = explode("\n", $normalized);
+        $lines = array_values(array_filter(array_map('trim', $lines), static fn (string $line) => $line !== ''));
 
-        if (count($blocks) < 4) {
+        if (count($lines) < 5) {
             throw new WorkDescriptionGenerationException('Incomplete OpenAI output structure.');
         }
+
+        $styleIndex = $this->findLineStartingWith($lines, $requiredLabels[0]);
+        $moodIndex = $this->findLineStartingWith($lines, $requiredLabels[1]);
+
+        if ($styleIndex === null || $moodIndex === null || $styleIndex < 3 || $moodIndex <= $styleIndex) {
+            throw new WorkDescriptionGenerationException('Incomplete OpenAI output structure.');
+        }
+    }
+
+    private function findLineStartingWith(array $lines, string $prefix): ?int
+    {
+        foreach ($lines as $index => $line) {
+            if (str_starts_with($line, $prefix)) {
+                return $index;
+            }
+        }
+
+        return null;
     }
 }

@@ -121,6 +121,26 @@ class WorkDescriptionGenerationTest extends TestCase
             ->assertSet('description_de', 'Existing DE');
     }
 
+    public function test_single_line_break_structure_is_accepted(): void
+    {
+        Http::fake([
+            'https://api.openai.test/v1/responses' => Http::response([
+                'output_text' => json_encode([
+                    'ua' => "Небесний вітрильник\nЦя композиція показує великий бірюзово-синій об'єкт на тлі неба й моря.\nФорма та вигини створюють ритм і відчуття об'єму.\nСтиль: сучасна натура\nНастрій: спокійний, легкий",
+                    'en' => "Sky Sail\nThis composition shows a large turquoise-blue form against the sky and sea.\nIts curves create rhythm and a sense of volume.\nStyle: contemporary naturalism\nMood: calm, airy",
+                    'de' => "Himmelssegel\nDiese Komposition zeigt eine große türkis-blaue Form vor Himmel und Meer.\nIhre Rundungen erzeugen Rhythmus und Volumen.\nStil: zeitgenössischer Naturalismus\nStimmung: ruhig, luftig",
+                ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            ]),
+        ]);
+
+        Livewire::test(Create::class)
+            ->set('main_image', UploadedFile::fake()->image('main.jpg', 1200, 900))
+            ->call('generateDescriptions')
+            ->assertSet('description_ua', "Небесний вітрильник\nЦя композиція показує великий бірюзово-синій об'єкт на тлі неба й моря.\nФорма та вигини створюють ритм і відчуття об'єму.\nСтиль: сучасна натура\nНастрій: спокійний, легкий")
+            ->assertSet('description_en', "Sky Sail\nThis composition shows a large turquoise-blue form against the sky and sea.\nIts curves create rhythm and a sense of volume.\nStyle: contemporary naturalism\nMood: calm, airy")
+            ->assertSet('description_de', "Himmelssegel\nDiese Komposition zeigt eine große türkis-blaue Form vor Himmel und Meer.\nIhre Rundungen erzeugen Rhythmus und Volumen.\nStil: zeitgenössischer Naturalismus\nStimmung: ruhig, luftig");
+    }
+
     public function test_mixed_language_openai_response_does_not_overwrite_existing_descriptions(): void
     {
         Http::fake([
