@@ -39,6 +39,9 @@ return [
         'key' => env('OPENAI_API_KEY'),
         'model' => env('OPENAI_MODEL', 'gpt-4.1-mini'),
         'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+        'image_model' => env('OPENAI_IMAGE_MODEL', 'gpt-image-1.5'),
+        'image_quality' => env('OPENAI_IMAGE_QUALITY', 'medium'),
+        'image_size' => env('OPENAI_IMAGE_SIZE', '1024x1024'),
     ],
 
 ];

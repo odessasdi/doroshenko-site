@@ -8,7 +8,9 @@ use App\Models\Technique;
 use App\Models\Work;
 use App\Models\WorkImage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -28,30 +30,90 @@ class WorksAdditionalImagesLimitTest extends TestCase
             'name_de' => 'Ol',
             'name_ua' => 'Олія',
         ]);
+
+        config([
+            'services.openai.key' => 'test-key',
+            'services.openai.image_model' => 'gpt-image-test',
+            'services.openai.base_url' => 'https://api.openai.test/v1',
+        ]);
     }
 
-    public function test_create_rejects_more_than_three_additional_images(): void
+    public function test_edit_adds_generated_visualization_to_library(): void
     {
         Storage::fake('public');
+        Storage::disk('public')->put('works/main/existing.jpg', $this->imageBytes(1400, 1000));
 
-        Livewire::test(Create::class)
-            ->set('technique_id', $this->technique->id)
-            ->set('is_published', true)
-            ->set('sort_order', 0)
-            ->set('main_image', UploadedFile::fake()->image('main.jpg'))
-            ->set('additional_images', [
-                UploadedFile::fake()->image('a1.jpg'),
-                UploadedFile::fake()->image('a2.jpg'),
-                UploadedFile::fake()->image('a3.jpg'),
-                UploadedFile::fake()->image('a4.jpg'),
-            ])
-            ->call('save')
-            ->assertHasErrors(['additional_images' => 'max']);
+        $generated = 'generated-image-bytes';
+        Http::fake([
+            'https://api.openai.test/v1/images/edits' => Http::response([
+                'data' => [[
+                    'b64_json' => base64_encode($generated),
+                ]],
+            ]),
+        ]);
+
+        $work = Work::create([
+            'technique_id' => $this->technique->id,
+            'main_image_path' => 'works/main/existing.jpg',
+            'size_w_mm' => 1000,
+            'size_h_mm' => 700,
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        Livewire::test(Edit::class, ['work' => $work])
+            ->set('visualization_preset', 'bedroom')
+            ->call('generateVisualization');
+
+        $image = WorkImage::query()->sole();
+
+        $this->assertSame('bedroom', $image->preset);
+        $this->assertStringStartsWith('works/visualizations/', $image->image_path);
+        Storage::disk('public')->assertExists($image->image_path);
+        $this->assertSame($generated, Storage::disk('public')->get($image->image_path));
+
+        Http::assertSent(function (Request $request) {
+            return $request->url() === 'https://api.openai.test/v1/images/edits';
+        });
     }
 
-    public function test_edit_rejects_when_total_additional_images_exceeds_three(): void
+    public function test_edit_does_not_generate_when_library_limit_is_reached(): void
     {
         Storage::fake('public');
+        Storage::disk('public')->put('works/main/existing.jpg', $this->imageBytes(1400, 1000));
+        Http::fake();
+
+        $work = Work::create([
+            'technique_id' => $this->technique->id,
+            'main_image_path' => 'works/main/existing.jpg',
+            'size_w_mm' => 1000,
+            'size_h_mm' => 700,
+            'is_published' => true,
+            'sort_order' => 0,
+        ]);
+
+        foreach (['living-room', 'bedroom', 'office'] as $index => $preset) {
+            WorkImage::create([
+                'work_id' => $work->id,
+                'image_path' => "works/visualizations/existing-{$index}.png",
+                'preset' => $preset,
+                'sort_order' => $index,
+            ]);
+        }
+
+        Livewire::test(Edit::class, ['work' => $work])
+            ->set('visualization_preset', 'office')
+            ->call('generateVisualization');
+
+        $this->assertSame(3, WorkImage::query()->count());
+        Http::assertNothingSent();
+    }
+
+    public function test_edit_requires_physical_size_before_visualization_generation(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('works/main/existing.jpg', $this->imageBytes(1400, 1000));
+        Http::fake();
 
         $work = Work::create([
             'technique_id' => $this->technique->id,
@@ -60,27 +122,12 @@ class WorksAdditionalImagesLimitTest extends TestCase
             'sort_order' => 0,
         ]);
 
-        WorkImage::create([
-            'work_id' => $work->id,
-            'image_path' => 'works/additional/existing-1.jpg',
-            'sort_order' => 0,
-        ]);
-        WorkImage::create([
-            'work_id' => $work->id,
-            'image_path' => 'works/additional/existing-2.jpg',
-            'sort_order' => 1,
-        ]);
-
         Livewire::test(Edit::class, ['work' => $work])
-            ->set('technique_id', $this->technique->id)
-            ->set('is_published', true)
-            ->set('sort_order', 0)
-            ->set('additional_images', [
-                UploadedFile::fake()->image('new-1.jpg'),
-                UploadedFile::fake()->image('new-2.jpg'),
-            ])
-            ->call('save')
-            ->assertHasErrors(['additional_images' => 'max']);
+            ->set('visualization_preset', 'living-room')
+            ->call('generateVisualization');
+
+        $this->assertSame(0, WorkImage::query()->count());
+        Http::assertNothingSent();
     }
 
     public function test_create_compresses_and_stores_main_image_on_public_disk(): void
@@ -131,28 +178,6 @@ class WorksAdditionalImagesLimitTest extends TestCase
         $this->assertLessThan(2_000_000, Storage::disk('public')->size($work->main_image_path));
     }
 
-    public function test_create_compresses_additional_images_with_current_paths(): void
-    {
-        Storage::fake('public');
-
-        Livewire::test(Create::class)
-            ->set('technique_id', $this->technique->id)
-            ->set('is_published', true)
-            ->set('sort_order', 0)
-            ->set('main_image', $this->makeLargeImage('main.jpg', 3600, 2600))
-            ->set('additional_images', [
-                $this->makeLargeImage('detail.png', 3800, 2800),
-            ])
-            ->call('save')
-            ->assertHasNoErrors();
-
-        $image = WorkImage::query()->sole();
-
-        $this->assertStringStartsWith('works/additional/', $image->image_path);
-        Storage::disk('public')->assertExists($image->image_path);
-        $this->assertLessThan(2_000_000, Storage::disk('public')->size($image->image_path));
-    }
-
     private function makeLargeImage(string $name, int $width, int $height): UploadedFile
     {
         $path = tempnam(sys_get_temp_dir(), 'work-image-');
@@ -172,5 +197,21 @@ class WorksAdditionalImagesLimitTest extends TestCase
         unlink($path);
 
         return UploadedFile::fake()->createWithContent($name, $contents ?: '');
+    }
+
+    private function imageBytes(int $width, int $height): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'work-image-');
+        $image = imagecreatetruecolor($width, $height);
+        $color = imagecolorallocate($image, 180, 120, 90);
+
+        imagefilledrectangle($image, 0, 0, $width, $height, $color);
+        imagejpeg($image, $path, 90);
+        imagedestroy($image);
+
+        $contents = file_get_contents($path) ?: '';
+        unlink($path);
+
+        return $contents;
     }
 }

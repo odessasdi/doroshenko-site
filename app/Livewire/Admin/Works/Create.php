@@ -6,7 +6,6 @@ use App\Livewire\Admin\Works\Concerns\UsesPaperSizePresets;
 use App\Exceptions\WorkDescriptionGenerationException;
 use App\Models\Technique;
 use App\Models\Work;
-use App\Models\WorkImage;
 use App\Services\WorkDescriptionGenerationService;
 use App\Services\WorkImageStorageService;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +30,6 @@ class Create extends Component
     public int $sort_order = 0;
 
     public $main_image;
-    public array $additional_images = [];
 
     public function generateDescriptions(): void
     {
@@ -77,8 +75,6 @@ class Create extends Component
             'is_published' => ['boolean'],
             'sort_order' => ['integer'],
             'main_image' => WorkImageStorageService::requiredRules(),
-            'additional_images' => ['nullable', 'array', 'max:3'],
-            'additional_images.*' => WorkImageStorageService::itemRules(),
         ]);
 
         $priceCents = $this->price !== null && $this->price !== ''
@@ -104,16 +100,6 @@ class Create extends Component
                 'is_published' => $data['is_published'],
                 'sort_order' => $data['sort_order'],
             ]);
-
-            foreach ($this->additional_images as $index => $image) {
-                $path = $imageStorage->store($image, 'works/additional', "additional_images.$index");
-
-                WorkImage::create([
-                    'work_id' => $work->id,
-                    'image_path' => $path,
-                    'sort_order' => $index,
-                ]);
-            }
         });
 
         session()->flash('success', 'Роботу створено.');
@@ -141,7 +127,6 @@ class Create extends Component
 
         return view('livewire.admin.works.create', [
             'techniques' => $techniques,
-            'remainingAdditional' => max(0, 3 - count($this->additional_images)),
             'paperPresets' => $this->paperPresets(),
         ]);
     }

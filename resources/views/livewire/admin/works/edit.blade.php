@@ -193,51 +193,64 @@
             </div>
 
             <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-zinc-900">Додаткові зображення</h2>
-                <p class="mt-1 text-sm text-zinc-500">До 3 зображень. Залишилось: {{ $remainingExtra }}</p>
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-semibold text-zinc-900">AI-візуалізації інтерʼєру</h2>
+                        <p class="mt-1 text-sm text-zinc-500">У бібліотеці: {{ $visualizationCount }} / {{ $visualizationLimit }}</p>
+                        <p class="mt-1 text-xs leading-5 text-zinc-500">Масштаб у сцені будується за фактичним розміром картини з полів ширини та висоти.</p>
+                    </div>
+                    <div class="w-full max-w-xs space-y-3">
+                        <div>
+                            <label class="text-sm font-medium text-zinc-700" for="visualization_preset">Сцена</label>
+                            <select
+                                id="visualization_preset"
+                                class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900"
+                                wire:model="visualization_preset"
+                            >
+                                @foreach ($visualizationPresets as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('visualization_preset') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <button
+                            type="button"
+                            class="inline-flex w-full items-center justify-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            wire:click="generateVisualization"
+                            wire:loading.attr="disabled"
+                            wire:target="generateVisualization"
+                        >
+                            <span wire:loading.remove wire:target="generateVisualization">ЗГЕНЕРУВАТИ ВІЗУАЛІЗАЦІЮ</span>
+                            <span wire:loading wire:target="generateVisualization">Генеруємо...</span>
+                        </button>
+                    </div>
+                </div>
 
                 @if ($workImages->count())
-                    <div class="mt-4 grid grid-cols-3 gap-3">
+                    <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                         @foreach ($workImages as $image)
-                            <div class="group relative overflow-hidden rounded-lg border border-zinc-200">
-                                <img src="{{ $image->url }}" alt="" class="h-20 w-full object-cover">
-                                <button
-                                    type="button"
-                                    class="absolute right-1 top-1 rounded-full bg-black/60 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100"
-                                    wire:click="deleteExtraImage({{ $image->id }})"
-                                    onclick="if (!confirm('Видалити це зображення?')) { event.stopImmediatePropagation(); event.preventDefault(); }"
-                                >
-                                    Видалити
-                                </button>
+                            <div class="group relative overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
+                                <img src="{{ $image->url }}" alt="" class="h-40 w-full object-cover">
+                                <div class="flex items-center justify-between gap-3 px-3 py-2">
+                                    <div class="text-sm font-medium text-zinc-700">{{ $image->preset_label ?? 'Візуалізація' }}</div>
+                                    <button
+                                        type="button"
+                                        class="rounded-full bg-zinc-900 px-3 py-1 text-xs text-white transition hover:bg-zinc-800"
+                                        wire:click="deleteVisualization({{ $image->id }})"
+                                        onclick="if (!confirm('Видалити цю візуалізацію?')) { event.stopImmediatePropagation(); event.preventDefault(); }"
+                                    >
+                                        Видалити
+                                    </button>
+                                </div>
                             </div>
                         @endforeach
                     </div>
+                @else
+                    <p class="mt-4 text-sm leading-6 text-zinc-600">
+                        Бібліотека поки порожня. Оберіть сцену та згенеруйте першу візуалізацію по головному фото.
+                    </p>
                 @endif
-
-                <div class="mt-4 space-y-3">
-                    <input
-                        id="additional_images"
-                        name="additional_images[]"
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        class="block w-full text-sm text-zinc-600 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-zinc-800"
-                        wire:model="additional_images"
-                        @if ($remainingExtra === 0) disabled @endif
-                    >
-                    @error('additional_images') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
-                    @error('additional_images.*') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
-
-                    @if ($additional_images)
-                        <div class="grid grid-cols-3 gap-3">
-                            @foreach ($additional_images as $image)
-                                <div class="overflow-hidden rounded-lg border border-zinc-200">
-                                    <img src="{{ $image->temporaryUrl() }}" alt="" class="h-20 w-full object-cover">
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
             </div>
 
             <div class="flex justify-end gap-3">

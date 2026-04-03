@@ -6,21 +6,21 @@
 <div class="sm:col-span-2">
     <label class="text-sm font-medium text-zinc-700">Формат</label>
 
-    <div class="mt-3 flex flex-wrap items-start gap-3">
+    <div class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
         @foreach ($paperPresets as $presetKey => $preset)
             @php
                 $isLandscape = $preset['width'] > $preset['height'];
                 $paperCode = str_starts_with($presetKey, 'a3') ? 'A3' : 'A4';
                 $isActive = $currentWidth === $preset['width'] && $currentHeight === $preset['height'];
                 $cardClasses = $isActive
-                    ? 'bg-zinc-100 text-zinc-950'
+                    ? 'bg-zinc-100 text-zinc-950 shadow-sm'
                     : 'bg-white text-zinc-700 hover:bg-zinc-50';
                 $confirmMessage = "Перезаписати поточні розміри значенням {$preset['label']}?";
             @endphp
 
             <button
                 type="button"
-                class="group inline-flex h-24 w-24 items-center justify-center rounded-2xl transition {{ $cardClasses }}"
+                class="group flex min-h-[8.5rem] items-center justify-center rounded-[1.75rem] px-5 py-4 transition {{ $cardClasses }}"
                 wire:click="applyPaperPreset('{{ $presetKey }}')"
                 @if ($confirmOnChange)
                     onclick="const widthInput = document.getElementById('size_w_mm'); const heightInput = document.getElementById('size_h_mm'); const nextWidth = '{{ $preset['width'] }}'; const nextHeight = '{{ $preset['height'] }}'; const willChange = String(widthInput?.value ?? '') !== nextWidth || String(heightInput?.value ?? '') !== nextHeight; if (willChange && !confirm('{{ $confirmMessage }}')) { event.stopImmediatePropagation(); event.preventDefault(); }"
@@ -31,7 +31,7 @@
                 @if ($isLandscape)
                     <svg
                         viewBox="0 0 60 40"
-                        class="h-[3.75rem] w-[5.75rem]"
+                        class="h-[4.2rem] w-[6.4rem]"
                         aria-hidden="true"
                         fill="none"
                     >
@@ -62,7 +62,7 @@
                 @else
                     <svg
                         viewBox="0 0 40 60"
-                        class="h-[5.75rem] w-[3.75rem]"
+                        class="h-[6.4rem] w-[4.2rem]"
                         aria-hidden="true"
                         fill="none"
                     >

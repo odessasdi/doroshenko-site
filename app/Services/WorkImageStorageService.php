@@ -43,11 +43,26 @@ class WorkImageStorageService
         $format = $this->targetFormat($file);
         $encoded = $this->encodeCompressed($file, $format);
         $extension = $format === 'webp' ? 'webp' : 'jpg';
-        $slug = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) ?: $fallbackName) ?: $fallbackName;
-        $name = Str::uuid() . '-' . $slug;
-        $path = trim($directory, '/') . '/' . $name . '.' . $extension;
+        $path = $this->buildPath(
+            $directory,
+            $extension,
+            pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) ?: $fallbackName
+        );
 
         Storage::disk('public')->put($path, (string) $encoded);
+
+        return $path;
+    }
+
+    public function storeContents(
+        string $contents,
+        string $directory,
+        string $extension = 'png',
+        string $fallbackName = 'image'
+    ): string {
+        $path = $this->buildPath($directory, $extension, $fallbackName);
+
+        Storage::disk('public')->put($path, $contents);
 
         return $path;
     }
@@ -86,5 +101,12 @@ class WorkImageStorageService
         $extension = strtolower($file->getClientOriginalExtension());
 
         return in_array($extension, ['png', 'webp'], true) ? 'webp' : 'jpg';
+    }
+
+    private function buildPath(string $directory, string $extension, string $name): string
+    {
+        $slug = Str::slug($name) ?: 'image';
+
+        return trim($directory, '/') . '/' . Str::uuid() . '-' . $slug . '.' . ltrim($extension, '.');
     }
 }

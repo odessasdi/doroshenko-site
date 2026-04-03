@@ -189,31 +189,11 @@
             </div>
 
             <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-zinc-900">Додаткові зображення</h2>
-                <p class="mt-1 text-sm text-zinc-500">До 3 зображень. Залишилось: {{ $remainingAdditional }}</p>
-                <div class="mt-4 space-y-3">
-                    <input
-                        id="additional_images"
-                        name="additional_images[]"
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        class="block w-full text-sm text-zinc-600 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-zinc-800"
-                        wire:model="additional_images"
-                    >
-                    @error('additional_images') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
-                    @error('additional_images.*') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
-
-                    @if ($additional_images)
-                        <div class="grid grid-cols-3 gap-3">
-                            @foreach ($additional_images as $image)
-                                <div class="overflow-hidden rounded-lg border border-zinc-200">
-                                    <img src="{{ $image->temporaryUrl() }}" alt="" class="h-20 w-full object-cover">
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
+                <h2 class="text-lg font-semibold text-zinc-900">AI-візуалізації інтерʼєру</h2>
+                <p class="mt-2 text-sm leading-6 text-zinc-600">
+                    Додаткові зображення тут не завантажуються вручну. Після створення роботи відкрийте її редагування
+                    та згенеруйте до 3 візуалізацій по головному фото.
+                </p>
             </div>
 
             <div class="flex justify-end">

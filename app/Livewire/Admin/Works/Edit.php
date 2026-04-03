@@ -2,12 +2,15 @@
 
 namespace App\Livewire\Admin\Works;
 
+use App\Enums\InteriorVisualizationPreset;
+use App\Exceptions\WorkVisualizationGenerationException;
 use App\Livewire\Admin\Works\Concerns\UsesPaperSizePresets;
 use App\Exceptions\WorkDescriptionGenerationException;
 use App\Models\Technique;
 use App\Models\Work;
 use App\Models\WorkImage;
 use App\Services\WorkDescriptionGenerationService;
+use App\Services\WorkInteriorVisualizationService;
 use App\Services\WorkImageStorageService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +21,8 @@ class Edit extends Component
 {
     use WithFileUploads;
     use UsesPaperSizePresets;
+
+    private const MAX_VISUALIZATIONS = 3;
 
     public Work $work;
 
@@ -34,7 +39,7 @@ class Edit extends Component
     public int $sort_order = 0;
 
     public $main_image;
-    public array $additional_images = [];
+    public string $visualization_preset = InteriorVisualizationPreset::LivingRoom->value;
 
     public function generateDescriptions(): void
     {
@@ -86,7 +91,70 @@ class Edit extends Component
         $this->sort_order = $work->sort_order;
     }
 
-    public function deleteExtraImage(int $id): void
+    public function generateVisualization(): void
+    {
+        if ($this->visualizationCount() >= self::MAX_VISUALIZATIONS) {
+            session()->flash('error', 'Для цієї роботи вже збережено максимум 3 візуалізації.');
+
+            return;
+        }
+
+        $rules = [
+            'visualization_preset' => ['required', 'in:' . implode(',', InteriorVisualizationPreset::values())],
+        ];
+
+        if ($this->main_image) {
+            $rules['main_image'] = WorkImageStorageService::optionalRules();
+        }
+
+        $this->validate($rules);
+
+        if (! $this->main_image && ! $this->work->main_image_path) {
+            session()->flash('error', 'Спочатку завантажте головне зображення.');
+
+            return;
+        }
+
+        if (! $this->size_w_mm || ! $this->size_h_mm) {
+            session()->flash('error', 'Для генерації візуалізації спочатку вкажіть фактичний розмір картини.');
+
+            return;
+        }
+
+        $preset = InteriorVisualizationPreset::from($this->visualization_preset);
+        $storage = app(WorkImageStorageService::class);
+
+        try {
+            $imageBytes = $this->main_image
+                ? app(WorkInteriorVisualizationService::class)->generateFromUpload(
+                    $this->main_image,
+                    $preset,
+                    $this->size_w_mm,
+                    $this->size_h_mm,
+                )
+                : app(WorkInteriorVisualizationService::class)->generateFromStoredImage(
+                    $this->work->main_image_path,
+                    $preset,
+                    $this->size_w_mm,
+                    $this->size_h_mm,
+                );
+        } catch (WorkVisualizationGenerationException $exception) {
+            session()->flash('error', $exception->getMessage());
+
+            return;
+        }
+
+        WorkImage::create([
+            'work_id' => $this->work->id,
+            'image_path' => $storage->storeContents($imageBytes, 'works/visualizations', 'png', $preset->value),
+            'preset' => $preset->value,
+            'sort_order' => (int) ($this->work->images()->max('sort_order') ?? -1) + 1,
+        ]);
+
+        session()->flash('success', 'AI-візуалізацію додано до бібліотеки.');
+    }
+
+    public function deleteVisualization(int $id): void
     {
         $image = WorkImage::where('work_id', $this->work->id)->whereKey($id)->firstOrFail();
 
@@ -96,13 +164,11 @@ class Edit extends Component
 
         $image->delete();
 
-        session()->flash('success', 'Додаткове зображення видалено.');
+        session()->flash('success', 'Візуалізацію видалено.');
     }
 
     public function save()
     {
-        $remaining = $this->remainingExtraSlots();
-
         $data = $this->validate([
             'technique_id' => ['required', 'exists:techniques,id'],
             'year' => ['nullable', 'integer', 'between:1800,2100'],
@@ -116,8 +182,6 @@ class Edit extends Component
             'is_published' => ['boolean'],
             'sort_order' => ['integer'],
             'main_image' => WorkImageStorageService::optionalRules(),
-            'additional_images' => ['nullable', 'array', 'max:'.$remaining],
-            'additional_images.*' => WorkImageStorageService::itemRules(),
         ]);
 
         $priceCents = $this->price !== null && $this->price !== ''
@@ -147,34 +211,17 @@ class Edit extends Component
             $this->work->is_published = $data['is_published'];
             $this->work->sort_order = $data['sort_order'];
             $this->work->save();
-
-            $nextSort = (int) ($this->work->images()->max('sort_order') ?? -1) + 1;
-
-            foreach ($this->additional_images as $image) {
-                $path = $imageStorage->store($image, 'works/additional', 'additional_image');
-
-                WorkImage::create([
-                    'work_id' => $this->work->id,
-                    'image_path' => $path,
-                    'sort_order' => $nextSort,
-                ]);
-
-                $nextSort++;
-            }
         });
 
-        $this->additional_images = [];
         $this->main_image = null;
 
         session()->flash('success', 'Роботу оновлено.');
         return $this->redirectRoute('admin.works.index');
     }
 
-    private function remainingExtraSlots(): int
+    private function visualizationCount(): int
     {
-        $current = $this->work->images()->count();
-
-        return max(0, 3 - $current);
+        return $this->work->images()->count();
     }
 
     private function toCents(string $value): int
@@ -200,7 +247,9 @@ class Edit extends Component
         return view('livewire.admin.works.edit', [
             'techniques' => $techniques,
             'workImages' => $workImages,
-            'remainingExtra' => $this->remainingExtraSlots(),
+            'visualizationPresets' => InteriorVisualizationPreset::options(),
+            'visualizationCount' => $this->visualizationCount(),
+            'visualizationLimit' => self::MAX_VISUALIZATIONS,
             'paperPresets' => $this->paperPresets(),
         ]);
     }
