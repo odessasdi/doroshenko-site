@@ -33,7 +33,8 @@ Route::prefix('admin')->middleware(['auth', 'admin', 'adminlocale'])->group(func
     });
 
     Route::get('/techniques', AdminTechniquesIndex::class)->name('admin.techniques.index');
-    Route::get('/genres', AdminGenresIndex::class)->name('admin.genres.index');
+    Route::redirect('/genres', '/admin/collections');
+    Route::get('/collections', AdminGenresIndex::class)->name('admin.collections.index');
     Route::get('/surfaces', AdminSurfacesIndex::class)->name('admin.surfaces.index');
     Route::get('/statistics', [StatisticsController::class, 'index'])->name('admin.statistics');
     Route::get('/works', AdminWorksIndex::class)->name('admin.works.index');

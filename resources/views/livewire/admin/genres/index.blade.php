@@ -1,8 +1,8 @@
 <div class="space-y-6">
     <div class="flex items-start justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-semibold text-zinc-900">Жанри</h1>
-            <p class="mt-1 text-sm text-zinc-600">Керування списком жанрів.</p>
+            <h1 class="text-2xl font-semibold text-zinc-900">Колекції</h1>
+            <p class="mt-1 text-sm text-zinc-600">Керування списком колекцій.</p>
         </div>
         <button
             type="button"
@@ -51,7 +51,7 @@
                                         type="button"
                                         class="rounded-lg border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
                                         wire:click="delete({{ $genre->id }})"
-                                        onclick="if (!confirm('Видалити цей жанр?')) { event.stopImmediatePropagation(); event.preventDefault(); }"
+                                        onclick="if (!confirm('Видалити цю колекцію?')) { event.stopImmediatePropagation(); event.preventDefault(); }"
                                     >
                                         Видалити
                                     </button>
@@ -60,7 +60,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td class="px-4 py-6 text-center text-zinc-500" colspan="5">Поки що жанрів немає.</td>
+                            <td class="px-4 py-6 text-center text-zinc-500" colspan="5">Поки що колекцій немає.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -69,7 +69,7 @@
 
         <div class="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 class="text-lg font-semibold text-zinc-900">
-                {{ $editingId ? 'Редагувати жанр' : 'Новий жанр' }}
+                {{ $editingId ? 'Редагувати колекцію' : 'Нова колекція' }}
             </h2>
             <div class="mt-4 grid grid-cols-1 gap-4">
                 <div>

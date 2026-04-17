@@ -12,7 +12,7 @@ return [
     'about_this_work' => 'Über dieses Werk',
     'details' => 'Details',
     'technique' => 'Technik',
-    'genre' => 'Genre',
+    'genre' => 'Kollektion',
     'surface' => 'Bildträger',
     'year' => 'Jahr',
     'size' => 'Größe',

@@ -57,13 +57,13 @@
                         @error('technique_id') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-zinc-700" for="genre_id">Жанр</label>
+                        <label class="text-sm font-medium text-zinc-700" for="genre_id">Колекція</label>
                         <select
                             id="genre_id"
                             class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900"
                             wire:model="genre_id"
                         >
-                            <option value="">Без жанру</option>
+                            <option value="">Без колекції</option>
                             @foreach ($genres as $genre)
                                 <option value="{{ $genre->id }}">{{ $genre->name_ua }}</option>
                             @endforeach

@@ -71,11 +71,36 @@ class WorkGenreTest extends TestCase
             'sort_order' => 2,
         ]);
 
-        $this->get('/en/gallery?genre='.$landscape->id)
+        $this->get('/en/gallery?collection='.$landscape->id)
             ->assertOk()
             ->assertSee('Oil · Landscape')
             ->assertSee('USD 1,111')
             ->assertDontSee('EUR 2,222');
+    }
+
+    public function test_public_gallery_keeps_legacy_genre_filter_url_working(): void
+    {
+        $technique = $this->technique();
+        $landscape = Genre::create([
+            'name_en' => 'Landscape',
+            'name_de' => 'Landschaft',
+            'name_ua' => 'Пейзаж',
+        ]);
+
+        Work::create([
+            'technique_id' => $technique->id,
+            'genre_id' => $landscape->id,
+            'main_image_path' => 'works/main/legacy-genre.jpg',
+            'price_cents' => 111100,
+            'currency' => 'USD',
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $this->get('/en/gallery?genre='.$landscape->id)
+            ->assertOk()
+            ->assertSee('Oil · Landscape')
+            ->assertSee('USD 1,111');
     }
 
     public function test_work_page_more_works_uses_same_genre(): void

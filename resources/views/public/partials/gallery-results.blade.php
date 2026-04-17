@@ -3,7 +3,7 @@
         @php
             $query = array_filter([
                 'technique' => $filters['technique'] ?? null,
-                'genre' => $filters['genre'] ?? null,
+                'collection' => $filters['collection'] ?? null,
                 'surface' => $filters['surface'] ?? null,
                 'year' => $filters['year'] ?? null,
             ]);

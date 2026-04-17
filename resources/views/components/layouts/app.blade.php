@@ -11,7 +11,7 @@
     @php
         $isWorks = request()->is('admin/works*');
         $isTechniques = request()->is('admin/techniques*');
-        $isGenres = request()->is('admin/genres*');
+        $isCollections = request()->is('admin/collections*') || request()->is('admin/genres*');
         $isSurfaces = request()->is('admin/surfaces*');
         $isStatistics = request()->is('admin/statistics*');
         $menuBase = 'px-3 py-2 rounded-lg text-sm';
@@ -26,7 +26,7 @@
                     <a href="/admin/statistics" class="{{ $isStatistics ? $menuActive : $menuDefault }}">Статистика</a>
                     <a href="/admin/works" class="{{ $isWorks ? $menuActive : $menuDefault }}">Роботи</a>
                     <a href="/admin/techniques" class="{{ $isTechniques ? $menuActive : $menuDefault }}">Техніки</a>
-                    <a href="/admin/genres" class="{{ $isGenres ? $menuActive : $menuDefault }}">Жанри</a>
+                    <a href="/admin/collections" class="{{ $isCollections ? $menuActive : $menuDefault }}">Колекції</a>
                     <a href="/admin/surfaces" class="{{ $isSurfaces ? $menuActive : $menuDefault }}">Основи</a>
                 </nav>
             </div>

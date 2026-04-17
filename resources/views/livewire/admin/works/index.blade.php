@@ -42,12 +42,12 @@
                 </select>
             </div>
             <div>
-                <label class="text-xs font-semibold uppercase tracking-wide text-zinc-500">Жанр</label>
+                <label class="text-xs font-semibold uppercase tracking-wide text-zinc-500">Колекція</label>
                 <select
                     class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900"
                     wire:model.live="genreId"
                 >
-                    <option value="">Усі жанри</option>
+                    <option value="">Усі колекції</option>
                     @foreach ($genres as $genre)
                         <option value="{{ $genre->id }}">{{ $genre->name_ua ?? $genre->name_en }}</option>
                     @endforeach
@@ -116,7 +116,7 @@
             @endif
             @if ($genreId)
                 <span class="rounded-full bg-zinc-100 px-3 py-1">
-                    Жанр: {{ $genres->firstWhere('id', $genreId)?->name_ua ?? $genres->firstWhere('id', $genreId)?->name_en ?? '—' }}
+                    Колекція: {{ $genres->firstWhere('id', $genreId)?->name_ua ?? $genres->firstWhere('id', $genreId)?->name_en ?? '—' }}
                 </span>
             @endif
             @if ($surfaceId)
@@ -164,7 +164,7 @@
                         </button>
                     </th>
                     <th class="px-4 py-3">Техніка</th>
-                    <th class="px-4 py-3">Жанр</th>
+                    <th class="px-4 py-3">Колекція</th>
                     <th class="px-4 py-3">Основа</th>
                     <th class="px-4 py-3">Розмір</th>
                     <th class="px-4 py-3">

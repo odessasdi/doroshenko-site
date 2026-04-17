@@ -23,7 +23,7 @@ class PublicController extends Controller
             ->where('is_published', true);
 
         $techniqueId = $request->query('technique');
-        $genreId = $request->query('genre');
+        $genreId = $request->query('collection', $request->query('genre'));
         $surfaceId = $request->query('surface');
         $year = $request->query('year');
 
@@ -65,7 +65,7 @@ class PublicController extends Controller
             'locale' => app()->getLocale(),
             'filters' => [
                 'technique' => $techniqueId,
-                'genre' => $genreId,
+                'collection' => $genreId,
                 'surface' => $surfaceId,
                 'year' => $year,
             ],
@@ -85,7 +85,7 @@ class PublicController extends Controller
         }
 
         $techniqueId = $request->query('technique');
-        $genreId = $request->query('genre');
+        $genreId = $request->query('collection', $request->query('genre'));
         $surfaceId = $request->query('surface');
         $year = $request->query('year');
 
@@ -147,7 +147,7 @@ class PublicController extends Controller
             'nextId' => $nextId,
             'filters' => [
                 'technique' => $techniqueId,
-                'genre' => $genreId,
+                'collection' => $genreId,
                 'surface' => $surfaceId,
                 'year' => $year,
             ],

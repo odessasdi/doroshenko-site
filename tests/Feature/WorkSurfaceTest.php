@@ -67,7 +67,7 @@ class WorkSurfaceTest extends TestCase
             'sort_order' => 2,
         ]);
 
-        $this->get('/en/gallery?surface='.$paper->id)
+        $this->get('/en/gallery?surface='.$paper->id.'&collection='.$genre->id)
             ->assertOk()
             ->assertSee('Oil · Landscape · Paper')
             ->assertSee('USD 1,111')

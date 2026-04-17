@@ -12,7 +12,7 @@ return [
     'about_this_work' => 'About this work',
     'details' => 'Details',
     'technique' => 'Technique',
-    'genre' => 'Genre',
+    'genre' => 'Collection',
     'surface' => 'Surface',
     'year' => 'Year',
     'size' => 'Size',

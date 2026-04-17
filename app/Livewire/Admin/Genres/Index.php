@@ -25,13 +25,13 @@ class Index extends Component
 
         if ($this->editingId) {
             Genre::whereKey($this->editingId)->update($data);
-            session()->flash('success', 'Жанр оновлено.');
+            session()->flash('success', 'Колекцію оновлено.');
             $this->resetForm();
         } else {
             Genre::create($data);
-            session()->flash('success', 'Жанр створено.');
+            session()->flash('success', 'Колекцію створено.');
 
-            return $this->redirectRoute('admin.genres.index');
+            return $this->redirectRoute('admin.collections.index');
         }
     }
 
@@ -48,7 +48,7 @@ class Index extends Component
     public function delete(int $id): void
     {
         Genre::whereKey($id)->delete();
-        session()->flash('success', 'Жанр видалено.');
+        session()->flash('success', 'Колекцію видалено.');
     }
 
     public function resetForm(): void

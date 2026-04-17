@@ -12,7 +12,7 @@ return [
     'about_this_work' => 'Про цю роботу',
     'details' => 'Деталі',
     'technique' => 'Техніка',
-    'genre' => 'Жанр',
+    'genre' => 'Колекція',
     'surface' => 'Основа',
     'year' => 'Рік',
     'size' => 'Розмір',

@@ -30,14 +30,14 @@
         </div>
         <div>
             <label class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                {{ $locale === 'de' ? 'Genre' : ($locale === 'ua' ? 'Жанр' : 'Genre') }}
+                {{ __('ui.genre') }}
             </label>
-            <select name="genre" class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900">
+            <select name="collection" class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900">
                 <option value="">
-                    {{ $locale === 'de' ? 'Alle Genres' : ($locale === 'ua' ? 'Усі жанри' : 'All genres') }}
+                    {{ $locale === 'de' ? 'Alle Kollektionen' : ($locale === 'ua' ? 'Усі колекції' : 'All collections') }}
                 </option>
                 @foreach ($genres as $genre)
-                    <option value="{{ $genre->id }}" @selected(($filters['genre'] ?? '') == $genre->id)>
+                    <option value="{{ $genre->id }}" @selected(($filters['collection'] ?? '') == $genre->id)>
                         {{ $genre->name($locale) }}
                     </option>
                 @endforeach
