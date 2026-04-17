@@ -12,6 +12,8 @@ class Work extends Model
 {
     protected $fillable = [
         'technique_id',
+        'genre_id',
+        'surface_id',
         'year',
         'size_w_mm',
         'size_h_mm',
@@ -37,6 +39,16 @@ class Work extends Model
     public function technique(): BelongsTo
     {
         return $this->belongsTo(Technique::class);
+    }
+
+    public function genre(): BelongsTo
+    {
+        return $this->belongsTo(Genre::class);
+    }
+
+    public function surface(): BelongsTo
+    {
+        return $this->belongsTo(Surface::class);
     }
 
     public function images(): HasMany
@@ -72,7 +84,7 @@ class Work extends Model
             }
         }
 
-        if (!$hasReal) {
+        if (! $hasReal) {
             $urls[] = $this->placeholderUrl();
         }
 
@@ -97,25 +109,25 @@ class Work extends Model
 
     public function getSizeLabelAttribute(): ?string
     {
-        if (!$this->size_w_mm || !$this->size_h_mm) {
+        if (! $this->size_w_mm || ! $this->size_h_mm) {
             return null;
         }
 
         $w = $this->formatCentimeters($this->size_w_mm / 10);
         $h = $this->formatCentimeters($this->size_h_mm / 10);
 
-        return $w . ' × ' . $h . ' cm';
+        return $w.' × '.$h.' cm';
     }
 
     public function getPriceLabelAttribute(): ?string
     {
-        if (!$this->price_cents || !$this->currency) {
+        if (! $this->price_cents || ! $this->currency) {
             return null;
         }
 
         $amount = number_format($this->price_cents / 100, 2, '.', '');
 
-        return $amount . ' ' . $this->currency;
+        return $amount.' '.$this->currency;
     }
 
     public function description(string $locale): ?string
@@ -154,6 +166,6 @@ class Work extends Model
     {
         $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900"><rect width="1200" height="900" fill="#f4f4f5"/><rect x="40" y="40" width="1120" height="820" fill="none" stroke="#d4d4d8" stroke-width="3"/><text x="600" y="455" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="#71717a">Image not available</text></svg>';
 
-        return 'data:image/svg+xml;utf8,' . rawurlencode($svg);
+        return 'data:image/svg+xml;utf8,'.rawurlencode($svg);
     }
 }

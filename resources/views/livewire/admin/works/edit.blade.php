@@ -57,6 +57,34 @@
                         @error('technique_id') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
+                        <label class="text-sm font-medium text-zinc-700" for="genre_id">Жанр</label>
+                        <select
+                            id="genre_id"
+                            class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900"
+                            wire:model="genre_id"
+                        >
+                            <option value="">Без жанру</option>
+                            @foreach ($genres as $genre)
+                                <option value="{{ $genre->id }}">{{ $genre->name_ua }}</option>
+                            @endforeach
+                        </select>
+                        @error('genre_id') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-zinc-700" for="surface_id">Основа</label>
+                        <select
+                            id="surface_id"
+                            class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900"
+                            wire:model="surface_id"
+                        >
+                            <option value="">Без основи</option>
+                            @foreach ($surfaces as $surface)
+                                <option value="{{ $surface->id }}">{{ $surface->name_ua }}</option>
+                            @endforeach
+                        </select>
+                        @error('surface_id') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
                         <label class="text-sm font-medium text-zinc-700" for="year">Рік</label>
                         <input
                             id="year"

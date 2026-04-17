@@ -3,12 +3,17 @@
         $locale = app()->getLocale();
         $queryBase = array_filter([
             'technique' => $filters['technique'] ?? null,
+            'genre' => $filters['genre'] ?? null,
+            'surface' => $filters['surface'] ?? null,
             'year' => $filters['year'] ?? null,
         ]);
-        $localizedTitle = trim((string) data_get($work, 'title_' . $locale));
-        $fallbackTitle = $work->technique?->name($locale) ?? __('ui.artwork');
-        $displayTitle = $localizedTitle !== '' ? $localizedTitle : $fallbackTitle;
-        $description = trim((string) $work->description($locale));
+        $cleanUtf8 = fn ($value) => mb_scrub((string) $value, 'UTF-8');
+        $imageUrls = array_map($cleanUtf8, $imageUrls);
+        $description = trim($cleanUtf8($work->description($locale)));
+        $descriptionParts = explode("\n", str_replace(["\r\n", "\r"], "\n", $description), 2);
+        $descriptionTitle = trim($descriptionParts[0] ?? '');
+        $fallbackTitle = $cleanUtf8($work->genre?->name($locale) ?? $work->technique?->name($locale) ?? __('ui.artwork'));
+        $displayTitle = $cleanUtf8($descriptionTitle !== '' ? $descriptionTitle : $fallbackTitle);
 
         $priceText = function () use ($work) {
             if (!$work->price_cents) {
@@ -36,6 +41,8 @@
 
         $detailRows = array_values(array_filter([
             ['label' => __('ui.technique'), 'value' => $work->technique?->name($locale)],
+            ['label' => __('ui.genre'), 'value' => $work->genre?->name($locale)],
+            ['label' => __('ui.surface'), 'value' => $work->surface?->name($locale)],
             ['label' => __('ui.year'), 'value' => $work->year],
             ['label' => __('ui.size'), 'value' => $work->size_label],
             ['label' => __('ui.price'), 'value' => $priceText()],
@@ -236,6 +243,11 @@
                             $morePrice = $moreWork->price_cents
                                 ? trim(($moreWork->currency ? $moreWork->currency . ' ' : '') . number_format($moreWork->price_cents / 100, 0, '.', ','))
                                 : __('ui.price_on_request');
+                            $moreCategoryLabel = collect([
+                                $moreWork->technique?->name($locale),
+                                $moreWork->genre?->name($locale),
+                                $moreWork->surface?->name($locale),
+                            ])->filter()->implode(' · ');
                         @endphp
                         <a
                             href="{{ $link }}"
@@ -244,12 +256,12 @@
                             <div class="flex h-[240px] items-center justify-center overflow-hidden rounded-2xl bg-zinc-100 p-3 shadow-sm ring-1 ring-zinc-200 transition-shadow duration-200 group-hover:shadow-md">
                                 <img
                                     src="{{ $moreWork->mainImageUrl() }}"
-                                    alt="{{ $moreWork->technique?->name($locale) ?? __('ui.artwork') }}"
+                                    alt="{{ $moreCategoryLabel !== '' ? $moreCategoryLabel : __('ui.artwork') }}"
                                     class="h-full w-full max-h-full max-w-full object-contain"
                                     loading="lazy"
                                 >
                             </div>
-                            <div class="mt-3 text-sm text-zinc-500">{{ $moreWork->technique?->name($locale) ?? '—' }}</div>
+                            <div class="mt-3 text-sm text-zinc-500">{{ $moreCategoryLabel !== '' ? $moreCategoryLabel : '—' }}</div>
                             <div class="mt-1 text-lg font-semibold text-zinc-900">{{ $moreWork->year ?? '—' }} · {{ $moreWork->size_label ?? '—' }}</div>
                             <div class="mt-1 text-sm text-zinc-600">{{ $morePrice }}</div>
                         </a>

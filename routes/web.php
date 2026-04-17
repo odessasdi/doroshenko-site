@@ -1,7 +1,9 @@
 <?php
 
-use App\Http\Controllers\PublicController;
 use App\Http\Controllers\Admin\StatisticsController;
+use App\Http\Controllers\PublicController;
+use App\Livewire\Admin\Genres\Index as AdminGenresIndex;
+use App\Livewire\Admin\Surfaces\Index as AdminSurfacesIndex;
 use App\Livewire\Admin\Techniques\Index as AdminTechniquesIndex;
 use App\Livewire\Admin\Works\Create as AdminWorksCreate;
 use App\Livewire\Admin\Works\Edit as AdminWorksEdit;
@@ -31,13 +33,15 @@ Route::prefix('admin')->middleware(['auth', 'admin', 'adminlocale'])->group(func
     });
 
     Route::get('/techniques', AdminTechniquesIndex::class)->name('admin.techniques.index');
+    Route::get('/genres', AdminGenresIndex::class)->name('admin.genres.index');
+    Route::get('/surfaces', AdminSurfacesIndex::class)->name('admin.surfaces.index');
     Route::get('/statistics', [StatisticsController::class, 'index'])->name('admin.statistics');
     Route::get('/works', AdminWorksIndex::class)->name('admin.works.index');
     Route::get('/works/create', AdminWorksCreate::class)->name('admin.works.create');
     Route::get('/works/{work}/edit', AdminWorksEdit::class)->name('admin.works.edit');
 });
 
-if (!Route::has('logout')) {
+if (! Route::has('logout')) {
     Route::post('/logout', function (Request $request) {
         Auth::logout();
         $request->session()->invalidate();

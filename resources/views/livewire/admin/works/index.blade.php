@@ -19,7 +19,7 @@
     @endif
 
     <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr_1fr_1fr_0.6fr_auto]">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_1fr_0.6fr_auto]">
             <div>
                 <label class="text-xs font-semibold uppercase tracking-wide text-zinc-500">Пошук</label>
                 <input
@@ -38,6 +38,30 @@
                     <option value="">Усі техніки</option>
                     @foreach ($techniques as $technique)
                         <option value="{{ $technique->id }}">{{ $technique->name_ua ?? $technique->name_en }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="text-xs font-semibold uppercase tracking-wide text-zinc-500">Жанр</label>
+                <select
+                    class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900"
+                    wire:model.live="genreId"
+                >
+                    <option value="">Усі жанри</option>
+                    @foreach ($genres as $genre)
+                        <option value="{{ $genre->id }}">{{ $genre->name_ua ?? $genre->name_en }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label class="text-xs font-semibold uppercase tracking-wide text-zinc-500">Основа</label>
+                <select
+                    class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900"
+                    wire:model.live="surfaceId"
+                >
+                    <option value="">Усі основи</option>
+                    @foreach ($surfaces as $surface)
+                        <option value="{{ $surface->id }}">{{ $surface->name_ua ?? $surface->name_en }}</option>
                     @endforeach
                 </select>
             </div>
@@ -90,6 +114,16 @@
                     Техніка: {{ $techniques->firstWhere('id', $techniqueId)?->name_ua ?? $techniques->firstWhere('id', $techniqueId)?->name_en ?? '—' }}
                 </span>
             @endif
+            @if ($genreId)
+                <span class="rounded-full bg-zinc-100 px-3 py-1">
+                    Жанр: {{ $genres->firstWhere('id', $genreId)?->name_ua ?? $genres->firstWhere('id', $genreId)?->name_en ?? '—' }}
+                </span>
+            @endif
+            @if ($surfaceId)
+                <span class="rounded-full bg-zinc-100 px-3 py-1">
+                    Основа: {{ $surfaces->firstWhere('id', $surfaceId)?->name_ua ?? $surfaces->firstWhere('id', $surfaceId)?->name_en ?? '—' }}
+                </span>
+            @endif
             @if ($year)
                 <span class="rounded-full bg-zinc-100 px-3 py-1">Рік: {{ $year }}</span>
             @endif
@@ -101,7 +135,7 @@
             @if ($perPage !== 20)
                 <span class="rounded-full bg-zinc-100 px-3 py-1">На сторінці: {{ $perPage }}</span>
             @endif
-            @if ($q === '' && !$techniqueId && !$year && $published === 'all' && $perPage === 20)
+            @if ($q === '' && !$techniqueId && !$genreId && !$surfaceId && !$year && $published === 'all' && $perPage === 20)
                 <span class="text-zinc-400">Немає активних фільтрів</span>
             @endif
         </div>
@@ -130,6 +164,8 @@
                         </button>
                     </th>
                     <th class="px-4 py-3">Техніка</th>
+                    <th class="px-4 py-3">Жанр</th>
+                    <th class="px-4 py-3">Основа</th>
                     <th class="px-4 py-3">Розмір</th>
                     <th class="px-4 py-3">
                         <button type="button" class="inline-flex items-center gap-1" wire:click="sort('price')">
@@ -175,6 +211,8 @@
                         </td>
                         <td class="px-4 py-3">{{ $work->year ?? '—' }}</td>
                         <td class="px-4 py-3">{{ $work->technique?->name_ua ?? $work->technique?->name_en ?? '—' }}</td>
+                        <td class="px-4 py-3">{{ $work->genre?->name_ua ?? $work->genre?->name_en ?? '—' }}</td>
+                        <td class="px-4 py-3">{{ $work->surface?->name_ua ?? $work->surface?->name_en ?? '—' }}</td>
                         <td class="px-4 py-3">{{ $work->size_label ?? '—' }}</td>
                         <td class="px-4 py-3">{{ $work->price_label ?? '—' }}</td>
                         <td class="px-4 py-3">
@@ -205,7 +243,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td class="px-4 py-6 text-center text-zinc-500" colspan="10">Поки що робіт немає.</td>
+                        <td class="px-4 py-6 text-center text-zinc-500" colspan="12">Поки що робіт немає.</td>
                     </tr>
                 @endforelse
             </tbody>

@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Admin\Works;
 
-use App\Livewire\Admin\Works\Concerns\UsesPaperSizePresets;
 use App\Exceptions\WorkDescriptionGenerationException;
+use App\Livewire\Admin\Works\Concerns\UsesPaperSizePresets;
+use App\Models\Genre;
+use App\Models\Surface;
 use App\Models\Technique;
 use App\Models\Work;
 use App\Services\WorkDescriptionGenerationService;
@@ -14,19 +16,33 @@ use Livewire\WithFileUploads;
 
 class Create extends Component
 {
-    use WithFileUploads;
     use UsesPaperSizePresets;
+    use WithFileUploads;
 
     public ?int $technique_id = null;
+
+    public ?int $genre_id = null;
+
+    public ?int $surface_id = null;
+
     public ?int $year = null;
+
     public ?int $size_w_mm = null;
+
     public ?int $size_h_mm = null;
+
     public ?string $price = null;
+
     public ?string $currency = null;
+
     public ?string $description_en = null;
+
     public ?string $description_de = null;
+
     public ?string $description_ua = null;
+
     public bool $is_published = true;
+
     public int $sort_order = 0;
 
     public $main_image;
@@ -64,6 +80,8 @@ class Create extends Component
     {
         $data = $this->validate([
             'technique_id' => ['required', 'exists:techniques,id'],
+            'genre_id' => ['nullable', 'exists:genres,id'],
+            'surface_id' => ['nullable', 'exists:surfaces,id'],
             'year' => ['nullable', 'integer', 'between:1800,2100'],
             'size_w_mm' => ['nullable', 'integer', 'min:1'],
             'size_h_mm' => ['nullable', 'integer', 'min:1'],
@@ -88,6 +106,8 @@ class Create extends Component
 
             $work = Work::create([
                 'technique_id' => $data['technique_id'],
+                'genre_id' => $data['genre_id'],
+                'surface_id' => $data['surface_id'],
                 'year' => $data['year'],
                 'size_w_mm' => $data['size_w_mm'],
                 'size_h_mm' => $data['size_h_mm'],
@@ -103,6 +123,7 @@ class Create extends Component
         });
 
         session()->flash('success', 'Роботу створено.');
+
         return $this->redirectRoute('admin.works.index');
     }
 
@@ -124,9 +145,13 @@ class Create extends Component
     public function render()
     {
         $techniques = Technique::orderBy('name_en')->get();
+        $genres = Genre::orderBy('name_en')->get();
+        $surfaces = Surface::orderBy('name_en')->get();
 
         return view('livewire.admin.works.create', [
             'techniques' => $techniques,
+            'genres' => $genres,
+            'surfaces' => $surfaces,
             'paperPresets' => $this->paperPresets(),
         ]);
     }

@@ -40,6 +40,8 @@ return [
 
     'attributes' => [
         'technique_id' => 'техніка',
+        'genre_id' => 'жанр',
+        'surface_id' => 'основа',
         'year' => 'рік',
         'size_w_mm' => 'ширина',
         'size_h_mm' => 'висота',

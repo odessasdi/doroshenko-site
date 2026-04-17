@@ -3,15 +3,17 @@
 namespace App\Livewire\Admin\Works;
 
 use App\Enums\InteriorVisualizationPreset;
+use App\Exceptions\WorkDescriptionGenerationException;
 use App\Exceptions\WorkVisualizationGenerationException;
 use App\Livewire\Admin\Works\Concerns\UsesPaperSizePresets;
-use App\Exceptions\WorkDescriptionGenerationException;
+use App\Models\Genre;
+use App\Models\Surface;
 use App\Models\Technique;
 use App\Models\Work;
 use App\Models\WorkImage;
 use App\Services\WorkDescriptionGenerationService;
-use App\Services\WorkInteriorVisualizationService;
 use App\Services\WorkImageStorageService;
+use App\Services\WorkInteriorVisualizationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -19,26 +21,41 @@ use Livewire\WithFileUploads;
 
 class Edit extends Component
 {
-    use WithFileUploads;
     use UsesPaperSizePresets;
+    use WithFileUploads;
 
     private const MAX_VISUALIZATIONS = 3;
 
     public Work $work;
 
     public ?int $technique_id = null;
+
+    public ?int $genre_id = null;
+
+    public ?int $surface_id = null;
+
     public ?int $year = null;
+
     public ?int $size_w_mm = null;
+
     public ?int $size_h_mm = null;
+
     public ?string $price = null;
+
     public ?string $currency = null;
+
     public ?string $description_en = null;
+
     public ?string $description_de = null;
+
     public ?string $description_ua = null;
+
     public bool $is_published = true;
+
     public int $sort_order = 0;
 
     public $main_image;
+
     public string $visualization_preset = InteriorVisualizationPreset::LivingRoom->value;
 
     public function generateDescriptions(): void
@@ -77,6 +94,8 @@ class Edit extends Component
     {
         $this->work = $work;
         $this->technique_id = $work->technique_id;
+        $this->genre_id = $work->genre_id;
+        $this->surface_id = $work->surface_id;
         $this->year = $work->year;
         $this->size_w_mm = $work->size_w_mm;
         $this->size_h_mm = $work->size_h_mm;
@@ -100,7 +119,7 @@ class Edit extends Component
         }
 
         $rules = [
-            'visualization_preset' => ['required', 'in:' . implode(',', InteriorVisualizationPreset::values())],
+            'visualization_preset' => ['required', 'in:'.implode(',', InteriorVisualizationPreset::values())],
         ];
 
         if ($this->main_image) {
@@ -171,6 +190,8 @@ class Edit extends Component
     {
         $data = $this->validate([
             'technique_id' => ['required', 'exists:techniques,id'],
+            'genre_id' => ['nullable', 'exists:genres,id'],
+            'surface_id' => ['nullable', 'exists:surfaces,id'],
             'year' => ['nullable', 'integer', 'between:1800,2100'],
             'size_w_mm' => ['nullable', 'integer', 'min:1'],
             'size_h_mm' => ['nullable', 'integer', 'min:1'],
@@ -200,6 +221,8 @@ class Edit extends Component
             }
 
             $this->work->technique_id = $data['technique_id'];
+            $this->work->genre_id = $data['genre_id'];
+            $this->work->surface_id = $data['surface_id'];
             $this->work->year = $data['year'];
             $this->work->size_w_mm = $data['size_w_mm'];
             $this->work->size_h_mm = $data['size_h_mm'];
@@ -216,6 +239,7 @@ class Edit extends Component
         $this->main_image = null;
 
         session()->flash('success', 'Роботу оновлено.');
+
         return $this->redirectRoute('admin.works.index');
     }
 
@@ -242,10 +266,14 @@ class Edit extends Component
     public function render()
     {
         $techniques = Technique::orderBy('name_en')->get();
+        $genres = Genre::orderBy('name_en')->get();
+        $surfaces = Surface::orderBy('name_en')->get();
         $workImages = $this->work->images()->orderBy('sort_order')->get();
 
         return view('livewire.admin.works.edit', [
             'techniques' => $techniques,
+            'genres' => $genres,
+            'surfaces' => $surfaces,
             'workImages' => $workImages,
             'visualizationPresets' => InteriorVisualizationPreset::options(),
             'visualizationCount' => $this->visualizationCount(),

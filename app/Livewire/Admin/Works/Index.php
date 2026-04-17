@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Admin\Works;
 
+use App\Models\Genre;
+use App\Models\Surface;
 use App\Models\Technique;
 use App\Models\Work;
 use Illuminate\Support\Facades\Storage;
@@ -13,17 +15,35 @@ class Index extends Component
     use WithPagination;
 
     public string $q = '';
+
     public ?int $techniqueId = null;
+
+    public ?int $genreId = null;
+
+    public ?int $surfaceId = null;
+
     public ?int $year = null;
+
     public string $published = 'all';
+
     public string $sortBy = 'id';
+
     public string $sortDir = 'desc';
+
     public int $perPage = 20;
 
     public function updated($property): void
     {
         if ($property === 'techniqueId') {
             $this->techniqueId = $this->normalizeInt($this->techniqueId);
+        }
+
+        if ($property === 'genreId') {
+            $this->genreId = $this->normalizeInt($this->genreId);
+        }
+
+        if ($property === 'surfaceId') {
+            $this->surfaceId = $this->normalizeInt($this->surfaceId);
         }
 
         if ($property === 'year') {
@@ -34,7 +54,7 @@ class Index extends Component
             $this->perPage = $this->normalizeInt($this->perPage) ?? 20;
         }
 
-        if (in_array($property, ['q', 'techniqueId', 'year', 'published', 'sortBy', 'sortDir', 'perPage'], true)) {
+        if (in_array($property, ['q', 'techniqueId', 'genreId', 'surfaceId', 'year', 'published', 'sortBy', 'sortDir', 'perPage'], true)) {
             $this->resetPage();
         }
     }
@@ -43,12 +63,13 @@ class Index extends Component
     {
         $allowed = ['id', 'year', 'price', 'sort_order', 'created_at'];
 
-        if (!in_array($field, $allowed, true)) {
+        if (! in_array($field, $allowed, true)) {
             return;
         }
 
         if ($this->sortBy === $field) {
             $this->sortDir = $this->sortDir === 'asc' ? 'desc' : 'asc';
+
             return;
         }
 
@@ -60,6 +81,8 @@ class Index extends Component
     {
         $this->q = '';
         $this->techniqueId = null;
+        $this->genreId = null;
+        $this->surfaceId = null;
         $this->year = null;
         $this->published = 'all';
         $this->sortBy = 'id';
@@ -91,7 +114,7 @@ class Index extends Component
 
     public function render()
     {
-        $query = Work::with('technique');
+        $query = Work::with(['technique', 'genre', 'surface']);
 
         if ($this->q !== '') {
             $q = trim($this->q);
@@ -100,7 +123,7 @@ class Index extends Component
                     $inner->orWhere('id', (int) $q);
                 }
 
-                $like = '%' . $q . '%';
+                $like = '%'.$q.'%';
                 $inner->orWhere('description_en', 'like', $like)
                     ->orWhere('description_de', 'like', $like)
                     ->orWhere('description_ua', 'like', $like);
@@ -109,6 +132,14 @@ class Index extends Component
 
         if ($this->techniqueId) {
             $query->where('technique_id', $this->techniqueId);
+        }
+
+        if ($this->genreId) {
+            $query->where('genre_id', $this->genreId);
+        }
+
+        if ($this->surfaceId) {
+            $query->where('surface_id', $this->surfaceId);
         }
 
         if ($this->year) {
@@ -120,7 +151,7 @@ class Index extends Component
         }
 
         if ($this->sortBy === 'price') {
-            $query->orderByRaw('price_cents is null, price_cents ' . $this->sortDir);
+            $query->orderByRaw('price_cents is null, price_cents '.$this->sortDir);
         } else {
             $allowed = ['id', 'year', 'sort_order', 'created_at'];
             $sortBy = in_array($this->sortBy, $allowed, true) ? $this->sortBy : 'id';
@@ -131,10 +162,14 @@ class Index extends Component
             ->paginate($this->perPage)
             ->withPath('/admin/works');
         $techniques = Technique::orderBy('name_en')->get();
+        $genres = Genre::orderBy('name_en')->get();
+        $surfaces = Surface::orderBy('name_en')->get();
 
         return view('livewire.admin.works.index', [
             'works' => $works,
             'techniques' => $techniques,
+            'genres' => $genres,
+            'surfaces' => $surfaces,
         ]);
     }
 

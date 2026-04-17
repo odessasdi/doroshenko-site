@@ -12,7 +12,7 @@
         </div>
     </div>
 
-    <form id="gallery-filter-form" method="GET" action="{{ route('gallery', ['locale' => $locale]) }}" class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <form id="gallery-filter-form" method="GET" action="{{ route('gallery', ['locale' => $locale]) }}" class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div>
             <label class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                 {{ $locale === 'de' ? 'Technik' : ($locale === 'ua' ? 'Техніка' : 'Technique') }}
@@ -30,6 +30,21 @@
         </div>
         <div>
             <label class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                {{ $locale === 'de' ? 'Genre' : ($locale === 'ua' ? 'Жанр' : 'Genre') }}
+            </label>
+            <select name="genre" class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900">
+                <option value="">
+                    {{ $locale === 'de' ? 'Alle Genres' : ($locale === 'ua' ? 'Усі жанри' : 'All genres') }}
+                </option>
+                @foreach ($genres as $genre)
+                    <option value="{{ $genre->id }}" @selected(($filters['genre'] ?? '') == $genre->id)>
+                        {{ $genre->name($locale) }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <label class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                 {{ $locale === 'de' ? 'Jahr' : ($locale === 'ua' ? 'Рік' : 'Year') }}
             </label>
             <select name="year" class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900">
@@ -39,6 +54,21 @@
                 @foreach ($years as $year)
                     <option value="{{ $year }}" @selected(($filters['year'] ?? '') == $year)>
                         {{ $year }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <label class="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                {{ __('ui.surface') }}
+            </label>
+            <select name="surface" class="mt-1 w-full rounded-lg border-zinc-300 focus:border-zinc-900 focus:ring-zinc-900">
+                <option value="">
+                    {{ $locale === 'de' ? 'Alle Bildträger' : ($locale === 'ua' ? 'Усі основи' : 'All surfaces') }}
+                </option>
+                @foreach ($surfaces as $surface)
+                    <option value="{{ $surface->id }}" @selected(($filters['surface'] ?? '') == $surface->id)>
+                        {{ $surface->name($locale) }}
                     </option>
                 @endforeach
             </select>
