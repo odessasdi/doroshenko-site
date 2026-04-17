@@ -142,11 +142,29 @@ class Work extends Model
         return $this->{$field} ?: $this->description_en;
     }
 
+    public function title(string $locale): string
+    {
+        $description = trim($this->cleanUtf8($this->description($locale)));
+        $parts = explode("\n", str_replace(["\r\n", "\r"], "\n", $description), 2);
+        $title = trim($parts[0] ?? '');
+
+        if ($title !== '') {
+            return $title;
+        }
+
+        return $this->cleanUtf8($this->genre?->name($locale) ?? $this->technique?->name($locale) ?? __('ui.artwork'));
+    }
+
     private function formatCentimeters(float $value): string
     {
         $formatted = number_format($value, 1, '.', '');
 
         return rtrim(rtrim($formatted, '0'), '.');
+    }
+
+    private function cleanUtf8(mixed $value): string
+    {
+        return mb_scrub((string) $value, 'UTF-8');
     }
 
     private function pathToUrl(?string $path): string

@@ -78,6 +78,33 @@ class WorkGenreTest extends TestCase
             ->assertDontSee('EUR 2,222');
     }
 
+    public function test_public_gallery_uses_first_description_line_as_card_title(): void
+    {
+        $technique = $this->technique();
+        $genre = Genre::create([
+            'name_en' => 'Landscape',
+            'name_de' => 'Landschaft',
+            'name_ua' => 'Пейзаж',
+        ]);
+
+        Work::create([
+            'technique_id' => $technique->id,
+            'genre_id' => $genre->id,
+            'main_image_path' => 'works/main/gallery-title.jpg',
+            'description_en' => "Midnight Garden\nA quiet path under deep green branches.",
+            'is_published' => true,
+            'sort_order' => 1,
+        ]);
+
+        $this->get('/en/gallery')
+            ->assertOk()
+            ->assertSee(
+                '<div class="mt-3 text-lg font-semibold text-zinc-900">Midnight Garden</div>',
+                false,
+            )
+            ->assertSeeInOrder(['Midnight Garden', 'Oil · Landscape']);
+    }
+
     public function test_public_gallery_keeps_legacy_genre_filter_url_working(): void
     {
         $technique = $this->technique();

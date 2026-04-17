@@ -12,6 +12,7 @@
                 $work->genre?->name($locale),
                 $work->surface?->name($locale),
             ])->filter()->implode(' · ');
+            $displayTitle = $work->title($locale);
             $link = route('gallery.show', ['locale' => $locale, 'work' => $work->id]);
             if (!empty($query)) {
                 $link .= '?' . http_build_query($query);
@@ -27,14 +28,15 @@
             <div class="h-[240px] sm:h-[260px] lg:h-[360px] overflow-hidden rounded-2xl bg-zinc-100 shadow-sm ring-1 ring-zinc-200 transition-shadow duration-200 group-hover:shadow-md flex items-center justify-center p-2 lg:p-3">
                 <img
                     src="{{ $work->mainImageUrl() }}"
-                    alt="{{ $categoryLabel }}"
+                    alt="{{ $displayTitle }}"
                     class="h-full w-full max-h-full max-w-full object-contain select-none"
                     draggable="false"
                     loading="lazy"
                 >
             </div>
-            <div class="mt-3 text-sm text-zinc-500">{{ $categoryLabel !== '' ? $categoryLabel : '—' }}</div>
-            <div class="mt-1 text-lg font-semibold text-zinc-900">
+            <div class="mt-3 text-lg font-semibold text-zinc-900">{{ $displayTitle }}</div>
+            <div class="mt-1 text-sm text-zinc-500">{{ $categoryLabel !== '' ? $categoryLabel : '—' }}</div>
+            <div class="mt-1 text-sm font-medium text-zinc-700">
                 {{ $work->year ?? '—' }} · {{ $work->size_label ?? '—' }}
             </div>
             <div class="mt-1 text-sm text-zinc-600">{{ $priceLabel }}</div>
